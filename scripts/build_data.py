@@ -6,8 +6,8 @@ Fontes baixadas (GitHub datasets, espelhos dos dados oficiais):
   - NOAA Mauna Loa: CO2 atmosférico anual (1959-hoje)
   - CDIAC/GCP: emissões fósseis globais (1750-hoje)
 Fontes curadas à mão (aproximações, veja data/*.csv):
-  - Temperatura 1500-1849 (reconstruções tipo PAGES 2k)
-  - CO2 1500-1958 (testemunhos de gelo, tipo Law Dome)
+  - Temperatura 0-1849 (reconstruções tipo PAGES 2k)
+  - CO2 0-1958 (testemunhos de gelo, tipo Law Dome)
 """
 import csv, io, json, statistics, urllib.request
 from pathlib import Path

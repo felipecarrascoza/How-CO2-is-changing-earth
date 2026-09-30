@@ -1,6 +1,6 @@
 # Como o CO₂ está mudando a Terra
 
-Site estático com gráficos de temperatura global, CO₂ atmosférico e emissões de 1500 até hoje.
+Site estático com gráficos de temperatura global, CO₂ atmosférico e emissões do ano 0 até hoje.
 
 ## Como ver
 
@@ -13,4 +13,4 @@ Abra http://localhost:8000.
 ## Dados
 
 `python3 scripts/build_data.py` baixa as séries modernas e gera `site/data.js`.
-Os valores de 1500–1849 (temperatura) e 1500–1958 (CO₂) ficam em `data/*.csv` e são **aproximações** das reconstruções publicadas, boas para ver a tendência, não para citar números exatos.
+Os valores de 0–1849 (temperatura) e 0–1958 (CO₂) ficam em `data/*.csv` e são **aproximações** das reconstruções publicadas, boas para ver a tendência, não para citar números exatos.
