@@ -4,78 +4,129 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Como o CO₂ está mudando a Terra</title>
+<meta name="description" content="Temperatura global, CO₂ atmosférico e emissões de 1500 até hoje.">
 <style>
-  :root{--bg:#0f1720;--card:#17212d;--fg:#e8eef5;--mut:#9fb0c3;--grid:#27364a;--temp:#ff7a59;--co2:#4cc9f0;--em:#b48cff;--old:#8895a7}
-  @media (prefers-color-scheme:light){:root{--bg:#f5f7fa;--card:#fff;--fg:#14202e;--mut:#56677b;--grid:#dbe3ec;--old:#8a97a8}}
+  :root{
+    --bg:#f3f6fa;--card:#ffffff;--fg:#13202f;--mut:#5a6b7f;--grid:#e3e9f0;--line:#e3e9f0;
+    --temp:#f4623a;--co2:#0ea5d9;--em:#8b5cf6;--old:#8a97a8;--shadow:0 1px 2px rgba(15,30,50,.05),0 8px 24px rgba(15,30,50,.06);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#0b121b;--card:#131d29;--fg:#e9eff6;--mut:#94a6bb;--grid:#223246;--line:#223246;
+      --temp:#ff7a59;--co2:#4cc9f0;--em:#b48cff;--old:#7d8b9d;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25)}
+  }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,sans-serif}
-  main{max-width:1000px;margin:0 auto;padding:0 16px 48px}
-  header{padding:40px 0 8px}
-  h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:0 0 8px}
-  p.lead{color:var(--mut);margin:0;max-width:62ch}
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:24px 0}
-  .stat{background:var(--card);border-radius:12px;padding:16px}
-  .stat b{display:block;font-size:1.9rem;line-height:1.2}
-  .stat span{color:var(--mut);font-size:.88rem}
-  .controls{background:var(--card);border-radius:12px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:16px}
-  .controls label{display:flex;gap:8px;align-items:center;color:var(--mut);font-size:.9rem}
-  .controls input[type=range]{width:180px}
-  section.card{background:var(--card);border-radius:12px;padding:18px 16px 14px;margin-bottom:16px}
-  section.card h2{font-size:1.15rem;margin:0 0 2px}
-  section.card p{margin:0 0 12px;color:var(--mut);font-size:.9rem}
-  .chart{position:relative;height:340px}
-  footer{color:var(--mut);font-size:.85rem}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+
+  /* HERO */
+  .hero{position:relative;color:#fff;overflow:hidden;
+    background:radial-gradient(900px 400px at 85% -10%,rgba(255,110,64,.45),transparent 60%),
+               radial-gradient(700px 400px at 0% 100%,rgba(14,165,217,.35),transparent 60%),
+               linear-gradient(160deg,#0a1626 0%,#10263e 55%,#1a2d4a 100%)}
+  .hero .wrap{padding-top:64px;padding-bottom:64px}
+  .eyebrow{display:inline-block;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:#ffb59e;background:rgba(255,122,89,.14);border:1px solid rgba(255,122,89,.35);padding:4px 12px;border-radius:999px;margin-bottom:18px}
+  h1{font-size:clamp(2.1rem,6vw,3.7rem);line-height:1.08;margin:0 0 16px;letter-spacing:-.02em;font-weight:800}
+  h1 em{font-style:normal;background:linear-gradient(90deg,#4cc9f0,#ff7a59);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:#c3d1e2;font-size:1.1rem;max-width:58ch;margin:0 0 30px}
+  .stripes-label{display:flex;justify-content:space-between;font-size:.78rem;color:#9fb3cb;margin:0 0 6px}
+  .stripes{display:flex;height:84px;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .stripes i{flex:1}
+
+  /* STATS */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin:-34px 0 26px;position:relative}
+  .stat{background:var(--card);border-radius:16px;padding:18px 18px 16px;box-shadow:var(--shadow);border-top:4px solid var(--c);}
+  .stat b{display:block;font-size:1.75rem;line-height:1.15;letter-spacing:-.01em;color:var(--c)}
+  .stat span{display:block;color:var(--mut);font-size:.86rem;margin-top:6px}
+
+  /* CONTROLS */
+  .controls{position:sticky;top:10px;z-index:5;background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(10px);
+    border:1px solid var(--line);border-radius:14px;padding:12px 18px;display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center;margin-bottom:20px;box-shadow:var(--shadow)}
+  .controls label{display:flex;gap:10px;align-items:center;color:var(--mut);font-size:.9rem}
+  .controls output{font-weight:700;color:var(--fg);min-width:2.6em}
+  input[type=range]{accent-color:var(--temp);width:180px}
+  input[type=checkbox]{accent-color:var(--temp);width:16px;height:16px}
+
+  /* CARDS */
+  section.card{background:var(--card);border-radius:18px;padding:22px 22px 16px;margin-bottom:20px;box-shadow:var(--shadow);border-left:5px solid var(--c);
+    opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+  section.card.in{opacity:1;transform:none}
+  section.card h2{font-size:1.25rem;margin:0 0 4px;letter-spacing:-.01em}
+  section.card p{margin:0 0 14px;color:var(--mut);font-size:.92rem;max-width:75ch}
+  .chart{position:relative;height:350px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;color:var(--mut);margin-right:14px}
+  .chip i{width:14px;height:0;border-top:3px solid var(--c)}
+  .chip i.dash{border-top-style:dashed}
+  .note{margin-top:10px;font-size:.84rem;color:var(--mut)}
+
+  /* FOOTER */
+  footer{padding:10px 0 56px;color:var(--mut);font-size:.86rem}
+  .warn{background:color-mix(in srgb,var(--temp) 10%,var(--card));border:1px solid color-mix(in srgb,var(--temp) 35%,transparent);border-radius:14px;padding:14px 18px;margin:0 0 18px;color:var(--fg)}
+  footer ul{padding-left:18px;margin:0}
   footer li{margin-bottom:4px}
-  .warn{border-left:3px solid var(--temp);padding-left:12px}
+  code{background:var(--grid);padding:1px 6px;border-radius:6px;font-size:.85em}
+  @media (max-width:560px){.chart{height:300px}.stripes{height:64px}}
+  @media (prefers-reduced-motion:reduce){section.card{opacity:1;transform:none;transition:none}}
 </style>
 </head>
 <body>
-<main>
-<header>
-  <h1>Como o CO₂ está mudando a Terra</h1>
-  <p class="lead">Temperatura global, CO₂ na atmosfera e emissões humanas de 1500 até hoje, combinando reconstruções históricas e medições modernas.</p>
-</header>
 
-<div class="stats" id="stats"></div>
-
-<div class="controls">
-  <label>Começar em <input type="range" id="from" min="1500" max="1950" step="10" value="1500"> <output id="fromOut">1500</output></label>
-  <label><input type="checkbox" id="smooth" checked> Suavizar temperatura (média de 11 anos)</label>
+<div class="hero">
+  <div class="wrap">
+    <span class="eyebrow">1500 → hoje</span>
+    <h1>Como o <em>CO₂</em> está mudando a Terra</h1>
+    <p class="lead">Mais de cinco séculos de clima em poucos gráficos: temperatura global, gás carbônico na atmosfera e emissões humanas.</p>
+    <div class="stripes-label"><span id="sFrom"></span><span>Cada faixa é um ano: azul = mais frio, vermelho = mais quente</span><span id="sTo"></span></div>
+    <div class="stripes" id="stripes"></div>
+  </div>
 </div>
 
-<section class="card">
-  <h2>Temperatura global</h2>
-  <p>Anomalia em °C em relação a 1850–1900. Antes de 1850 são estimativas aproximadas (cinza); depois, medições (laranja).</p>
-  <div class="chart"><canvas id="cTemp"></canvas></div>
-</section>
+<main class="wrap">
+  <div class="stats" id="stats"></div>
 
-<section class="card">
-  <h2>CO₂ na atmosfera</h2>
-  <p>Partes por milhão (ppm). Testemunhos de gelo até 1958 (cinza), observatório de Mauna Loa depois (azul).</p>
-  <div class="chart"><canvas id="cCo2"></canvas></div>
-</section>
+  <div class="controls">
+    <label>Começar em <input type="range" id="from" min="1500" max="1950" step="10" value="1500"> <output id="fromOut">1500</output></label>
+    <label><input type="checkbox" id="smooth" checked> Suavizar temperatura (média de 11 anos)</label>
+  </div>
 
-<section class="card">
-  <h2>Emissões de CO₂ de combustíveis fósseis e cimento</h2>
-  <p>Bilhões de toneladas de CO₂ por ano, desde 1750.</p>
-  <div class="chart"><canvas id="cEm"></canvas></div>
-</section>
+  <section class="card" style="--c:var(--temp)">
+    <h2>Temperatura global</h2>
+    <p>Anomalia em °C em relação a 1850–1900. Acima de zero, mais quente que o fim do século XIX; abaixo, mais frio.</p>
+    <span class="chip" style="--c:var(--old)"><i class="dash"></i>Estimativa aproximada (antes de 1850)</span>
+    <span class="chip" style="--c:var(--temp)"><i></i>Medições</span>
+    <div class="chart"><canvas id="cTemp"></canvas></div>
+  </section>
 
-<section class="card">
-  <h2>CO₂ contra temperatura</h2>
-  <p>Cada ponto é um ano de 1959 até hoje: quanto mais CO₂, mais quente.</p>
-  <div class="chart"><canvas id="cScatter"></canvas></div>
-</section>
+  <section class="card" style="--c:var(--co2)">
+    <h2>CO₂ na atmosfera</h2>
+    <p>Partes por milhão (ppm). Por séculos o CO₂ ficou perto de 280 ppm. Hoje passa de 420.</p>
+    <span class="chip" style="--c:var(--old)"><i class="dash"></i>Testemunhos de gelo (aprox.)</span>
+    <span class="chip" style="--c:var(--co2)"><i></i>Mauna Loa</span>
+    <div class="chart"><canvas id="cCo2"></canvas></div>
+  </section>
 
-<footer>
-  <p class="warn"><b>Sobre a precisão dos dados.</b> Dados de 1500–1849 (temperatura) e 1500–1958 (CO₂) são valores aproximados, por década ou meio século, que reproduzem a forma geral das reconstruções publicadas (PAGES 2k, Law Dome). Servem para ver a tendência, não para citar valores exatos. As séries modernas vêm de bases oficiais.</p>
-  <ul>
-    <li>Temperatura 1850–hoje: NOAA (GCAG), reajustada para a base 1850–1900. O ano mais recente pode estar incompleto.</li>
-    <li>CO₂ 1959–hoje: NOAA, Mauna Loa.</li>
-    <li>Emissões: CDIAC / Global Carbon Project (conversão de C para CO₂ × 3,664).</li>
-    <li>Para atualizar: <code>python3 scripts/build_data.py</code></li>
-  </ul>
-</footer>
+  <section class="card" style="--c:var(--em)">
+    <h2>Emissões de CO₂ de combustíveis fósseis e cimento</h2>
+    <p>Bilhões de toneladas de CO₂ por ano, desde 1750.</p>
+    <div class="chart"><canvas id="cEm"></canvas></div>
+  </section>
+
+  <section class="card" style="--c:var(--temp)">
+    <h2>CO₂ contra temperatura</h2>
+    <p>Cada ponto é um ano de 1959 até hoje. As cores vão do azul (anos mais antigos) ao vermelho (mais recentes).</p>
+    <div class="chart"><canvas id="cScatter"></canvas></div>
+    <div class="note" id="trend"></div>
+  </section>
+
+  <footer>
+    <div class="warn"><b>Sobre a precisão dos dados.</b> Os dados de 1500–1849 (temperatura) e 1500–1958 (CO₂) são valores aproximados, por década ou meio século, que reproduzem a forma geral das reconstruções publicadas (PAGES 2k, Law Dome). Servem para ver a tendência, não para citar valores exatos. As séries modernas vêm de bases oficiais.</div>
+    <ul>
+      <li>Temperatura 1850–hoje: NOAA (GCAG), reajustada para a base 1850–1900. O ano mais recente pode estar incompleto.</li>
+      <li>CO₂ 1959–hoje: NOAA, Mauna Loa.</li>
+      <li>Emissões: CDIAC / Global Carbon Project (conversão de C para CO₂ × 3,664).</li>
+      <li>Para atualizar: <code>python3 scripts/build_data.py</code></li>
+    </ul>
+  </footer>
 </main>
 
 <script src="chart.umd.js"></script>
@@ -83,13 +134,14 @@
 <script>
 const D = window.DATA;
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const C = {temp:css('--temp'), co2:css('--co2'), em:css('--em'), old:css('--old'), grid:css('--grid'), fg:css('--fg'), mut:css('--mut')};
+const C = {temp:css('--temp'), co2:css('--co2'), em:css('--em'), old:css('--old'), grid:css('--grid'), fg:css('--fg'), mut:css('--mut'), card:css('--card')};
 Chart.defaults.color = C.mut;
 Chart.defaults.borderColor = C.grid;
-Chart.defaults.font.family = 'system-ui, sans-serif';
+Chart.defaults.font.family = '"Inter",system-ui,sans-serif';
+Object.assign(Chart.defaults.plugins.tooltip, {backgroundColor:'rgba(10,22,38,.94)', titleColor:'#fff', bodyColor:'#dbe6f3', padding:10, cornerRadius:8, displayColors:false});
 
-const pt = a => a.map(([x,y]) => ({x,y}));
 const last = a => a[a.length-1];
+const pt = a => a.map(([x,y]) => ({x,y}));
 function smooth(a, w){
   const h = (w-1)/2;
   return a.map(([x], i) => {
@@ -97,64 +149,128 @@ function smooth(a, w){
     return [x, s.reduce((t,p)=>t+p[1],0)/s.length];
   });
 }
+// azul -> branco -> vermelho
+function tempColor(v){
+  const t = Math.max(-1, Math.min(1, v/1.4));
+  const a = t < 0 ? [38,110,200] : [214,50,40], k = Math.abs(t);
+  const w = [245,245,245];
+  return `rgb(${w.map((c,i)=>Math.round(c+(a[i]-c)*Math.pow(k,.8))).join(',')})`;
+}
+function yearColor(f){ // f 0..1: azul -> vermelho
+  return `hsl(${Math.round(210 - 210*f)} 80% 52%)`;
+}
+
+// Faixas de aquecimento
+const T = D.temp_instr;
+document.getElementById('stripes').innerHTML = T.map(([y,v]) => `<i style="background:${tempColor(v)}" title="${y}: ${v>=0?'+':''}${v.toFixed(2)} °C"></i>`).join('');
+document.getElementById('sFrom').textContent = T[0][0];
+document.getElementById('sTo').textContent = last(T)[0];
 
 // Cartões de resumo
-const t0 = last(D.temp_instr), c0 = last(D.co2_mlo), e0 = last(D.emissions);
-const tAvg = D.temp_instr.filter(([y]) => y >= t0[0]-10 && y < t0[0]).reduce((s,p,_,a)=>s+p[1]/a.length,0);
+const t0 = last(T), c0 = last(D.co2_mlo), e0 = last(D.emissions);
+const tAvg = T.filter(([y]) => y >= t0[0]-10 && y < t0[0]).reduce((s,p,_,a)=>s+p[1]/a.length,0);
 document.getElementById('stats').innerHTML = [
-  [`${D.co2_ice[0][1]} → ${c0[1].toFixed(0)} ppm`, `CO₂ em 1500 e em ${c0[0]}`],
-  [`+${tAvg.toFixed(2)} °C`, `temperatura média dos 10 anos até ${t0[0]-1} vs 1850–1900`],
-  [`${e0[1].toFixed(1)} Gt`, `CO₂ emitido por combustíveis fósseis em ${e0[0]}`],
-  [`+${((c0[1]/277-1)*100).toFixed(0)}%`, `CO₂ atmosférico vs nível pré-industrial (~277 ppm)`]
-].map(([b,s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join('');
+  ['var(--co2)', `${D.co2_ice[0][1]} → ${c0[1].toFixed(0)} ppm`, `CO₂ na atmosfera em 1500 e em ${c0[0]}`],
+  ['var(--temp)', `+${tAvg.toFixed(2)} °C`, `temperatura média dos 10 anos até ${t0[0]-1}, vs 1850–1900`],
+  ['var(--em)', `${e0[1].toFixed(1)} Gt`, `CO₂ emitido por combustíveis fósseis em ${e0[0]}`],
+  ['var(--old)', `+${((c0[1]/277-1)*100).toFixed(0)}%`, `CO₂ atmosférico vs nível pré-industrial (~277 ppm)`]
+].map(([c,b,s]) => `<div class="stat" style="--c:${c}"><b>${b}</b><span>${s}</span></div>`).join('');
+
+// Plugin: marcos históricos
+const EVENTS = [[1600,'Pequena Idade do Gelo'],[1760,'Revolução Industrial'],[1958,'Medições em Mauna Loa']];
+const eventsPlugin = {
+  id:'events',
+  afterDatasetsDraw(chart, _, opts){
+    if(!opts || !opts.show) return;
+    const {ctx, chartArea:a, scales:{x}} = chart;
+    ctx.save(); ctx.font = '600 11px Inter,system-ui,sans-serif'; ctx.textBaseline = 'top';
+    let row = 0;
+    for(const [yr, name] of EVENTS){
+      if(!opts.show.includes(yr) || yr < x.min || yr > x.max) continue;
+      const px = x.getPixelForValue(yr);
+      ctx.strokeStyle = C.mut; ctx.globalAlpha = .55; ctx.setLineDash([3,4]);
+      ctx.beginPath(); ctx.moveTo(px,a.top); ctx.lineTo(px,a.bottom); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.fillStyle = C.mut;
+      const w = ctx.measureText(name).width;
+      const right = px + w + 10 > a.right;
+      ctx.textAlign = right ? 'right' : 'left';
+      ctx.fillText(name, right ? px-6 : px+6, a.top + 6 + row*15);
+      row++;
+    }
+    ctx.restore();
+  }
+};
+Chart.register(eventsPlugin);
 
 const fromEl = document.getElementById('from'), smoothEl = document.getElementById('smooth');
-const common = () => ({
-  responsive:true, maintainAspectRatio:false, parsing:false, animation:false,
+const gradient = (ctx, area, hex, a1, a2) => {
+  const g = ctx.createLinearGradient(0, area.top, 0, area.bottom);
+  g.addColorStop(0, hex + a1); g.addColorStop(1, hex + a2); return g;
+};
+const common = (events) => ({
+  responsive:true, maintainAspectRatio:false, parsing:false, animation:{duration:500},
   interaction:{mode:'nearest', axis:'x', intersect:false},
+  layout:{padding:{top:4,right:6}},
   scales:{
     x:{type:'linear', min:+fromEl.value, max:2030, ticks:{callback:v=>v, maxTicksLimit:10}, grid:{color:C.grid}},
     y:{grid:{color:C.grid}}
   },
-  plugins:{legend:{labels:{boxWidth:12}}}
+  plugins:{legend:{display:false}, events:{show:events}}
 });
-const line = (label, data, color, extra={}) => Object.assign({label, data:pt(data), borderColor:color, backgroundColor:color, borderWidth:2, pointRadius:0, tension:0}, extra);
+const line = (label, data, color, extra={}) => Object.assign({label, data:pt(data), borderColor:color, backgroundColor:color, borderWidth:2.5, pointRadius:0, pointHoverRadius:5, tension:.15}, extra);
+const fmtTip = (unit, d=1) => ({callbacks:{title:i=>String(Math.round(i[0].parsed.x)), label:c=>`${c.dataset.label}: ${c.parsed.y.toFixed(d)} ${unit}`}});
 
 const charts = {};
 function build(){
   Object.values(charts).forEach(c => c.destroy());
-  const tp = smoothEl.checked ? smooth(D.temp_instr, 11) : D.temp_instr;
-  let o = common();
+  const tp = smoothEl.checked ? smooth(T, 11) : T;
+  let o = common([1600,1760]);
   o.scales.y.title = {display:true, text:'°C vs 1850–1900'};
+  o.plugins.tooltip = fmtTip('°C', 2);
   charts.temp = new Chart('cTemp', {type:'line', data:{datasets:[
-    line('Estimativa aproximada (antes de 1850)', D.temp_paleo.concat([D.temp_instr[0]]), C.old, {borderDash:[5,4]}),
-    line('Medições', tp, C.temp)
+    line('Estimativa', D.temp_paleo.concat([T[0]]), C.old, {borderDash:[6,4], borderWidth:2}),
+    line('Medição', tp, C.temp, {fill:{target:{value:0}, above:C.temp+'40', below:'#3b82f640'}})
   ]}, options:o});
 
-  o = common();
+  o = common([1600,1760,1958]);
   o.scales.y.title = {display:true, text:'ppm'};
+  o.plugins.tooltip = fmtTip('ppm');
   charts.co2 = new Chart('cCo2', {type:'line', data:{datasets:[
-    line('Testemunhos de gelo (aprox.)', D.co2_ice.concat([D.co2_mlo[0]]), C.old, {borderDash:[5,4]}),
-    line('Mauna Loa', D.co2_mlo, C.co2)
+    line('Gelo (aprox.)', D.co2_ice.concat([D.co2_mlo[0]]), C.old, {borderDash:[6,4], borderWidth:2}),
+    line('Mauna Loa', D.co2_mlo, C.co2, {fill:'origin', backgroundColor:c=>c.chart.chartArea ? gradient(c.chart.ctx, c.chart.chartArea, C.co2, '55', '05') : C.co2+'22'})
   ]}, options:o});
 
-  o = common();
-  o.scales.x.min = Math.max(1750, +fromEl.value); o.scales.x.max = 2030;
+  o = common([1760]);
+  o.scales.x.min = Math.max(1750, +fromEl.value);
   o.scales.y.title = {display:true, text:'Gt CO₂ / ano'};
+  o.plugins.tooltip = fmtTip('Gt');
   charts.em = new Chart('cEm', {type:'line', data:{datasets:[
-    line('Emissões', D.emissions, C.em, {fill:true, backgroundColor:C.em+'33'})
+    line('Emissões', D.emissions, C.em, {fill:'origin', backgroundColor:c=>c.chart.chartArea ? gradient(c.chart.ctx, c.chart.chartArea, C.em, '66', '05') : C.em+'22'})
   ]}, options:o});
 
-  const tMap = Object.fromEntries(D.temp_instr);
+  // Dispersão com reta de tendência
+  const tMap = Object.fromEntries(T);
   const pts = D.co2_mlo.filter(([y]) => y in tMap).map(([y,c]) => ({x:c, y:tMap[y], year:y}));
-  charts.sc = new Chart('cScatter', {type:'scatter', data:{datasets:[{label:'Ano', data:pts, backgroundColor:C.temp, pointRadius:4}]},
-    options:{responsive:true, maintainAspectRatio:false, animation:false,
+  const n = pts.length, mx = pts.reduce((s,p)=>s+p.x,0)/n, my = pts.reduce((s,p)=>s+p.y,0)/n;
+  const slope = pts.reduce((s,p)=>s+(p.x-mx)*(p.y-my),0) / pts.reduce((s,p)=>s+(p.x-mx)**2,0);
+  const icpt = my - slope*mx;
+  const xs = [Math.min(...pts.map(p=>p.x)), Math.max(...pts.map(p=>p.x))];
+  const y0 = pts[0].year, y1 = last(pts).year;
+  charts.sc = new Chart('cScatter', {type:'scatter', data:{datasets:[
+    {label:'Ano', data:pts, pointRadius:5.5, pointHoverRadius:8, backgroundColor:pts.map(p=>yearColor((p.year-y0)/(y1-y0))), borderColor:'#ffffff55', borderWidth:1},
+    {type:'line', label:'Tendência', data:xs.map(x=>({x,y:icpt+slope*x})), borderColor:C.mut, borderDash:[6,4], borderWidth:2, pointRadius:0}
+  ]}, options:{responsive:true, maintainAspectRatio:false, animation:{duration:500},
       scales:{x:{title:{display:true,text:'CO₂ (ppm)'}, grid:{color:C.grid}}, y:{title:{display:true,text:'°C vs 1850–1900'}, grid:{color:C.grid}}},
-      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.raw.year}: ${c.raw.x} ppm, ${c.raw.y.toFixed(2)} °C`}}}}});
+      plugins:{legend:{display:false}, tooltip:{filter:i=>i.datasetIndex===0, callbacks:{title:i=>String(i[0].raw.year), label:c=>`${c.raw.x} ppm · ${c.raw.y.toFixed(2)} °C`}}}}});
+  document.getElementById('trend').innerHTML = `Em média, cada <b>+100 ppm</b> de CO₂ aparece junto com cerca de <b>+${(slope*100).toFixed(1)} °C</b> (correlação simples; o clima também responde a outros fatores).`;
 }
 fromEl.oninput = () => { document.getElementById('fromOut').textContent = fromEl.value; build(); };
 smoothEl.onchange = build;
 build();
+
+// Entrada suave dos cartões
+const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.08}) : null;
+document.querySelectorAll('section.card').forEach(s => io ? io.observe(s) : s.classList.add('in'));
 </script>
 </body>
 </html>
