@@ -19,25 +19,60 @@
                linear-gradient(135deg,var(--bg1),var(--bg2));
     display:flex;align-items:center;justify-content:center;padding:16px;overflow-x:hidden;user-select:none;
   }
+  button{font-family:inherit}
   .blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:.35;z-index:0;animation:float 14s ease-in-out infinite}
   .b1{width:300px;height:300px;background:#7c3aed;top:-80px;left:-60px}
   .b2{width:260px;height:260px;background:#06b6d4;bottom:-80px;right:-40px;animation-delay:-6s}
   @keyframes float{50%{transform:translate(40px,30px) scale(1.15)}}
 
-  .app{position:relative;z-index:1;max-width:100%;
+  .screen{display:none;position:relative;z-index:1;max-width:100%;
     background:var(--glass);border:1px solid var(--stroke);border-radius:24px;padding:20px;
-    backdrop-filter:blur(18px);box-shadow:0 30px 80px #0008,inset 0 1px 0 #fff2;
-    animation:appIn .7s cubic-bezier(.2,.9,.3,1.2)}
+    backdrop-filter:blur(18px);box-shadow:0 30px 80px #0008,inset 0 1px 0 #fff2}
+  .screen.active{display:block;animation:appIn .6s cubic-bezier(.2,.9,.3,1.2)}
   @keyframes appIn{from{opacity:0;transform:translateY(30px) scale(.95)}}
   h1{margin:0 0 14px;font-size:22px;letter-spacing:.5px;text-align:center;
      background:linear-gradient(90deg,var(--accent2),var(--accent),#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .levels{display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
-  .levels button,.tool{
-    border:1px solid var(--stroke);background:var(--glass);color:var(--text);padding:8px 16px;border-radius:12px;
+
+  /* ---------- menu ---------- */
+  #menu{width:680px;text-align:center}
+  #menu h1{font-size:34px;margin-bottom:4px}
+  #menu .sub{color:var(--muted);margin:0 0 22px;font-size:14px}
+  .label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 10px}
+  .modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+  .mode{
+    text-align:left;border:1px solid var(--stroke);background:var(--glass);color:var(--text);border-radius:18px;padding:16px;
+    cursor:pointer;transition:.25s;position:relative;overflow:hidden;
+    animation:cardIn .6s both cubic-bezier(.2,.9,.3,1.3)}
+  .mode:nth-child(2){animation-delay:.08s}.mode:nth-child(3){animation-delay:.16s}
+  @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.9)}}
+  .mode:hover{transform:translateY(-4px);background:#ffffff12}
+  .mode.sel{border-color:var(--accent2);background:linear-gradient(160deg,#8b5cf633,#22d3ee22);
+    box-shadow:0 0 0 1px var(--accent2),0 12px 36px #22d3ee33;transform:translateY(-4px)}
+  .mode .ic{font-size:34px;display:inline-block;animation:bob 3s ease-in-out infinite}
+  .mode:nth-child(2) .ic{animation-delay:-1s}.mode:nth-child(3) .ic{animation-delay:-2s}
+  @keyframes bob{50%{transform:translateY(-6px) rotate(6deg)}}
+  .mode b{display:block;font-size:17px;margin:6px 0 4px}
+  .mode span{font-size:12px;line-height:1.4;color:var(--muted);display:block}
+  .levels{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .lvl{border:1px solid var(--stroke);background:var(--glass);color:var(--text);padding:10px 20px;border-radius:14px;
+    font:600 15px inherit;cursor:pointer;transition:.2s}
+  .lvl small{display:block;font-weight:400;font-size:11px;color:#cbd5e1;opacity:.8;margin-top:2px}
+  .lvl:hover{transform:translateY(-2px);background:#ffffff14}
+  .lvl.sel{background:linear-gradient(135deg,var(--accent),#6366f1);border-color:transparent;box-shadow:0 6px 20px #8b5cf666}
+  .play{margin-top:24px;border:0;padding:14px 44px;border-radius:16px;font:800 17px inherit;letter-spacing:1px;color:#fff;cursor:pointer;
+    background:linear-gradient(135deg,var(--accent2),var(--accent),#f472b6);background-size:200% 100%;
+    box-shadow:0 10px 30px #8b5cf666;transition:.25s;animation:shine 4s linear infinite}
+  @keyframes shine{50%{background-position:100% 0}}
+  .play:hover{transform:translateY(-3px) scale(1.05)}
+  .play:active{transform:scale(.96)}
+
+  /* ---------- jogo ---------- */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .tag{font-weight:700;font-size:14px;padding:6px 12px;border-radius:999px;background:#0005;border:1px solid var(--stroke)}
+  .tool{border:1px solid var(--stroke);background:var(--glass);color:var(--text);padding:8px 14px;border-radius:12px;
     font:600 14px inherit;cursor:pointer;transition:.2s}
-  .levels button:hover,.tool:hover{transform:translateY(-2px);background:#ffffff14}
-  .levels button.active{background:linear-gradient(135deg,var(--accent),#6366f1);border-color:transparent;box-shadow:0 6px 20px #8b5cf666}
-  .levels small{display:block;font-weight:400;font-size:10px;color:#cbd5e1;opacity:.8}
+  .tool:hover{transform:translateY(-2px);background:#ffffff14}
+  .tool.on{background:linear-gradient(135deg,#f59e0b,#ef4444);border-color:transparent}
   .hud{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
   .stat{min-width:88px;padding:8px 12px;border-radius:12px;background:#0006;border:1px solid var(--stroke);
     font:700 22px/1 "Courier New",monospace;color:var(--accent2);text-align:center;text-shadow:0 0 12px #22d3ee88}
@@ -53,19 +88,30 @@
     background:linear-gradient(145deg,#4c4f8f,#33366b);box-shadow:0 3px 0 #1b1d44,inset 0 1px 0 #fff3;
     transition:transform .12s,filter .12s;
   }
+  .cell.long{font-size:calc(var(--cell)*.4)}
   .cell.spawn{animation:spawn .45s both cubic-bezier(.2,.9,.3,1.4)}
   @keyframes spawn{from{opacity:0;transform:scale(.2) rotate(-25deg)}}
   .cell:not(.open):hover{filter:brightness(1.3);transform:translateY(-2px)}
   .cell:not(.open):active{transform:translateY(1px) scale(.93)}
   .cell.open{background:#0f1330;box-shadow:inset 0 2px 6px #000a;cursor:default;animation:reveal .35s both}
   @keyframes reveal{0%{transform:scale(.6) rotateX(90deg);filter:brightness(2)}60%{transform:scale(1.08)}100%{transform:none;filter:none}}
+  .n0{color:#a5b4fc}
   .n1{color:#60a5fa}.n2{color:#4ade80}.n3{color:#f87171}.n4{color:#c084fc}
   .n5{color:#fb923c}.n6{color:#22d3ee}.n7{color:#f472b6}.n8{color:#e2e8f0}
-  .cell.open[class*=n]{text-shadow:0 0 10px currentColor}
-  .flag{animation:flagpop .4s cubic-bezier(.2,1.6,.4,1)}
+  .cell.open[class*=" n"]{text-shadow:0 0 10px currentColor}
+  .cell.open.neg{box-shadow:inset 0 2px 6px #000a,inset 0 0 0 1.5px #38bdf877}
+  .cell.open.neg::before{content:"";position:absolute;inset:0;border-radius:8px;background:linear-gradient(145deg,#0ea5e922,transparent)}
+  .flag{animation:flagpop .4s cubic-bezier(.2,1.6,.4,1);display:inline-block}
+  .flag.neg{filter:hue-rotate(180deg) saturate(1.4) drop-shadow(0 0 6px #38bdf8)}
   @keyframes flagpop{from{transform:scale(0) translateY(-14px) rotate(-40deg)}}
+  .badge{position:absolute;right:2px;bottom:1px;font:800 calc(var(--cell)*.3)/1 inherit;font-style:normal;
+    background:#000a;color:#fff;border-radius:6px;padding:2px 3px;animation:flagpop .3s}
+  .badge.neg{color:#38bdf8;font-size:calc(var(--cell)*.38)}
   .cell.flagged{background:linear-gradient(145deg,#7c3aed,#5b21b6)}
+  .cell.negflag{background:linear-gradient(145deg,#0284c7,#1e3a8a)}
   .cell.mine{background:#3a0d1c;animation:boom .5s both}
+  .cell.negmine{background:#0c2a4a}
+  .cell.negmine>span{filter:invert(1) drop-shadow(0 0 4px #38bdf8)}
   .cell.boom{background:radial-gradient(circle,#ef4444,#7f1d1d)!important;z-index:2}
   @keyframes boom{0%{transform:scale(.5);filter:brightness(3)}50%{transform:scale(1.35)}100%{transform:none}}
   .cell.wrong{background:#4b1d1d;opacity:.8}
@@ -75,8 +121,8 @@
   #board.win .cell{animation:wave .8s both}
   @keyframes wave{50%{transform:translateY(-10px) scale(1.12);filter:brightness(1.6)}}
   .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;font-size:12px;color:var(--muted)}
-  .tool.on{background:linear-gradient(135deg,#f59e0b,#ef4444);border-color:transparent}
   .best{font-weight:600;color:var(--text)}
+  #help{justify-content:center;text-align:center;line-height:1.5}
   #overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#020617aa;backdrop-filter:blur(4px);
     z-index:5;opacity:0;pointer-events:none;transition:.4s}
   #overlay.show{opacity:1;pointer-events:auto}
@@ -86,24 +132,37 @@
   .modal .big{font-size:56px;animation:bounce 1s infinite}
   @keyframes bounce{50%{transform:translateY(-10px)}}
   .modal h2{margin:6px 0}.modal p{color:var(--muted);margin:4px 0 18px}
-  .modal button{border:0;padding:12px 26px;border-radius:14px;font:700 15px inherit;color:#fff;cursor:pointer;
+  .modal .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .modal button{border:0;padding:12px 22px;border-radius:14px;font:700 15px inherit;color:#fff;cursor:pointer;
     background:linear-gradient(135deg,var(--accent),#6366f1);box-shadow:0 8px 24px #8b5cf666;transition:.2s}
+  .modal button.alt{background:#ffffff18;box-shadow:none}
   .modal button:hover{transform:translateY(-2px) scale(1.04)}
   canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:6}
-  @media(max-width:520px){.stat{min-width:70px;font-size:18px}.app{padding:14px}}
+  @media(max-width:520px){.stat{min-width:70px;font-size:18px}.screen{padding:14px}#menu h1{font-size:26px}}
 </style>
 </head>
 <body>
 <div class="blob b1"></div><div class="blob b2"></div>
-<div class="app">
+
+<!-- MENU INICIAL -->
+<div class="screen active" id="menu">
   <h1>💣 CAMPO MINADO</h1>
-  <div class="levels" id="levels">
-    <button data-l="easy" class="active">Fácil<small>9×9 · 10 minas</small></button>
-    <button data-l="medium">Médio<small>16×16 · 40 minas</small></button>
-    <button data-l="hard">Difícil<small>30×16 · 99 minas</small></button>
+  <p class="sub">Escolha um modo de jogo e a dificuldade</p>
+  <div class="label">Modo</div>
+  <div class="modes" id="modes"></div>
+  <div class="label">Dificuldade</div>
+  <div class="levels" id="levels"></div>
+  <button class="play" id="play">JOGAR ▶</button>
+</div>
+
+<!-- JOGO -->
+<div class="screen" id="game">
+  <div class="top">
+    <button class="tool" id="menuBtn">← Menu</button>
+    <div class="tag" id="tag"></div>
   </div>
   <div class="hud">
-    <div class="stat"><span>🚩</span><b id="mines">010</b></div>
+    <div class="stat" title="Minas restantes"><span>🚩</span><b id="mines">010</b></div>
     <button id="face" title="Reiniciar">🙂</button>
     <div class="stat"><span>⏱</span><b id="time">000</b></div>
   </div>
@@ -112,32 +171,81 @@
     <button class="tool" id="flagMode">🚩 Modo bandeira</button>
     <div>Recorde: <span class="best" id="best">—</span></div>
   </div>
-  <div class="foot" style="justify-content:center">Clique direito / segurar = bandeira · clique num número = abrir vizinhos</div>
+  <div class="foot" id="help"></div>
 </div>
-<div id="overlay"><div class="modal"><div class="big" id="mEmoji"></div><h2 id="mTitle"></h2><p id="mText"></p><button id="again">Jogar de novo</button></div></div>
+
+<div id="overlay"><div class="modal"><div class="big" id="mEmoji"></div><h2 id="mTitle"></h2><p id="mText"></p>
+  <div class="row"><button id="again">Jogar de novo</button><button id="toMenu" class="alt">Menu</button></div></div></div>
 <canvas id="fx"></canvas>
 
 <script>
-const LEVELS={easy:{c:9,r:9,m:10},medium:{c:16,r:16,m:40},hard:{c:30,r:16,m:99}};
+const LEVELS={
+  easy:{c:9,r:9,m:10,name:'Fácil'},
+  medium:{c:16,r:16,m:40,name:'Médio'},
+  hard:{c:30,r:16,m:99,name:'Difícil'}
+};
+const MODES={
+  classic:{name:'Clássico',icon:'💣',mult:1,
+    desc:'O campo minado de sempre.',
+    help:'Clique direito / segurar = bandeira · clique num número = abrir vizinhos'},
+  negative:{name:'Negativo',icon:'➖',mult:1,
+    desc:'Existem minas negativas! Elas subtraem dos números e pedem bandeira azul (−). Um 0 pode esconder minas que se cancelam.',
+    help:'Clique direito: 🚩 mina (+) → 🚩 azul mina negativa (−) → remover. Os números são a soma (+1 e −1 se cancelam). O contador mostra a soma restante.'},
+  multi:{name:'Multi-bombas',icon:'💥',mult:1.3,
+    desc:'Um quadrado pode ter até 3 bombas. Coloque várias bandeiras no mesmo quadrado.',
+    help:'Clique direito repetido: 1 → 2 → 3 bandeiras no mesmo quadrado → remover. Cada bomba conta no número.'}
+};
 const $=s=>document.querySelector(s);
 const boardEl=$('#board'),faceEl=$('#face');
-let level='easy',C,R,M,grid,cells,started,over,flags,opened,timer,secs,flagMode=false;
+let mode='classic',level='easy';
+try{mode=localStorage.getItem('ms-mode')||mode;level=localStorage.getItem('ms-level')||level}catch(e){}
+if(!MODES[mode])mode='classic';if(!LEVELS[level])level='easy';
+let C,R,M,NET,grid,cells,started,over,fsum,opened,timer,secs,flagMode=false,touching=false;
 
-function pad(n){return String(Math.max(0,n)).padStart(3,'0')}
-function bestKey(){return 'ms-best-'+level}
+const bombsFor=(m,l)=>Math.round(LEVELS[l].m*MODES[m].mult);
+const negFor=(m,b)=>m==='negative'?Math.round(b*.3):0;
+const netFor=(m,l)=>{const b=bombsFor(m,l);return b-2*negFor(m,b)};
+const fmt=n=>(n<0?'-':'')+String(Math.abs(n)).padStart(n<0?2:3,'0');
+
+/* ---------- menu ---------- */
+function buildMenu(){
+  $('#modes').innerHTML=Object.entries(MODES).map(([k,m])=>
+    `<button class="mode" data-k="${k}"><div class="ic">${m.icon}</div><b>${m.name}</b><span>${m.desc}</span></button>`).join('');
+  refreshMenu();
+}
+function refreshMenu(){
+  document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('sel',b.dataset.k===mode));
+  $('#levels').innerHTML=Object.entries(LEVELS).map(([k,l])=>
+    `<button class="lvl${k===level?' sel':''}" data-k="${k}">${l.name}<small>${l.c}×${l.r} · ${bombsFor(mode,k)} ${mode==='multi'?'bombas':'minas'}</small></button>`).join('');
+}
+$('#modes').addEventListener('click',e=>{const b=e.target.closest('.mode');if(!b)return;mode=b.dataset.k;refreshMenu()});
+$('#levels').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;level=b.dataset.k;refreshMenu()});
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id))}
+function showMenu(){clearInterval(timer);$('#overlay').classList.remove('show');show('menu')}
+function play(){
+  try{localStorage.setItem('ms-mode',mode);localStorage.setItem('ms-level',level)}catch(e){}
+  show('game');init();
+}
+$('#play').onclick=play;$('#menuBtn').onclick=showMenu;$('#toMenu').onclick=showMenu;
+
+/* ---------- jogo ---------- */
+const bestKey=()=>`ms-best-${mode}-${level}`;
 function showBest(){let b=null;try{b=localStorage.getItem(bestKey())}catch(e){}$('#best').textContent=b?b+'s':'—'}
+const setCounter=()=>{$('#mines').textContent=fmt(NET-fsum)};
 
 function init(){
-  ({c:C,r:R,m:M}=LEVELS[level]);
-  clearInterval(timer);secs=0;started=false;over=false;flags=0;opened=0;
-  $('#time').textContent=pad(0);$('#mines').textContent=pad(M);faceEl.textContent='🙂';
+  ({c:C,r:R}=LEVELS[level]);M=bombsFor(mode,level);NET=netFor(mode,level);
+  clearInterval(timer);secs=0;started=false;over=false;fsum=0;opened=0;
+  $('#time').textContent='000';setCounter();faceEl.textContent='🙂';
+  $('#tag').textContent=`${MODES[mode].icon} ${MODES[mode].name} · ${LEVELS[level].name}`;
+  $('#help').textContent=MODES[mode].help;
   boardEl.className='';boardEl.innerHTML='';
   const w=Math.min(36,Math.floor((Math.min(innerWidth-90,1100))/C)-3);
   document.documentElement.style.setProperty('--cell',Math.max(24,w)+'px');
   boardEl.style.gridTemplateColumns=`repeat(${C},var(--cell))`;
   grid=[];cells=[];
   for(let y=0;y<R;y++){grid.push([]);for(let x=0;x<C;x++){
-    grid[y].push({m:false,o:false,f:false,n:0});
+    grid[y].push({m:0,o:false,f:0,n:0,a:0});
     const el=document.createElement('div');el.className='cell spawn';
     el.style.animationDelay=((x+y)*18)+'ms';
     el.addEventListener('animationend',()=>el.classList.remove('spawn'),{once:true});
@@ -149,9 +257,10 @@ function setupCell(el,x,y){
   let pressTimer,long=false;
   el.addEventListener('click',()=>{ if(long){long=false;return}
     flagMode&&!grid[y][x].o ? toggleFlag(x,y) : reveal(x,y)});
-  el.addEventListener('contextmenu',e=>{e.preventDefault();toggleFlag(x,y)});
-  el.addEventListener('touchstart',()=>{long=false;pressTimer=setTimeout(()=>{long=true;toggleFlag(x,y);navigator.vibrate&&navigator.vibrate(30)},380)},{passive:true});
-  ['touchend','touchmove','touchcancel'].forEach(t=>el.addEventListener(t,()=>clearTimeout(pressTimer),{passive:true}));
+  el.addEventListener('contextmenu',e=>{e.preventDefault();if(!touching)toggleFlag(x,y)});
+  el.addEventListener('touchstart',()=>{touching=true;long=false;
+    pressTimer=setTimeout(()=>{long=true;toggleFlag(x,y);navigator.vibrate&&navigator.vibrate(30)},380)},{passive:true});
+  ['touchend','touchmove','touchcancel'].forEach(t=>el.addEventListener(t,()=>{clearTimeout(pressTimer);setTimeout(()=>touching=false,700)},{passive:true}));
 }
 const el=(x,y)=>cells[y*C+x];
 function neighbors(x,y){const a=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
@@ -159,66 +268,99 @@ function neighbors(x,y){const a=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;
 
 function place(sx,sy){
   const safe=new Set([sy*C+sx,...neighbors(sx,sy).map(([x,y])=>y*C+x)]);
-  let n=0;while(n<M){const x=Math.random()*C|0,y=Math.random()*R|0;
-    if(grid[y][x].m||safe.has(y*C+x))continue;grid[y][x].m=true;n++}
-  for(let y=0;y<R;y++)for(let x=0;x<C;x++)grid[y][x].n=neighbors(x,y).filter(([a,b])=>grid[b][a].m).length;
+  const mineCells=[];let placed=0;
+  while(placed<M){
+    if(mode==='multi'&&mineCells.length&&Math.random()<.35){ // empilha bomba numa já existente
+      const g=mineCells[Math.random()*mineCells.length|0];
+      if(g.m<3){g.m++;placed++}
+      continue;
+    }
+    const x=Math.random()*C|0,y=Math.random()*R|0,g=grid[y][x];
+    if(g.m||safe.has(y*C+x))continue;
+    g.m=1;mineCells.push(g);placed++;
+  }
+  const neg=negFor(mode,M);
+  if(neg)mineCells.sort(()=>Math.random()-.5).slice(0,neg).forEach(g=>g.m=-1);
+  for(let y=0;y<R;y++)for(let x=0;x<C;x++){
+    const nb=neighbors(x,y);
+    grid[y][x].n=nb.reduce((s,[a,b])=>s+grid[b][a].m,0);
+    grid[y][x].a=nb.filter(([a,b])=>grid[b][a].m!==0).length;
+  }
 }
-function startTimer(){timer=setInterval(()=>{secs++;$('#time').textContent=pad(secs)},1000)}
+function startTimer(){timer=setInterval(()=>{secs++;$('#time').textContent=String(secs).padStart(3,'0')},1000)}
 
+function nextFlag(f){
+  if(mode==='classic')return f?0:1;
+  if(mode==='negative')return f===0?1:f===1?-1:0;
+  return f>=3?0:f+1;
+}
+function renderFlag(x,y){
+  const g=grid[y][x],e=el(x,y);
+  e.classList.toggle('flagged',g.f>0);e.classList.toggle('negflag',g.f<0);
+  e.innerHTML=g.f===0?'':`<span class="flag${g.f<0?' neg':''}">🚩</span>`+
+    (g.f<0?'<i class="badge neg">−</i>':g.f>1?`<i class="badge">×${g.f}</i>`:'');
+}
 function toggleFlag(x,y){
   if(over)return;const g=grid[y][x];if(g.o)return;
-  g.f=!g.f;flags+=g.f?1:-1;const e=el(x,y);
-  e.classList.toggle('flagged',g.f);
-  e.innerHTML=g.f?'<span class="flag">🚩</span>':'';
-  $('#mines').textContent=pad(M-flags);
+  const nf=nextFlag(g.f);fsum+=nf-g.f;g.f=nf;renderFlag(x,y);setCounter();
 }
 function reveal(x,y){
   if(over)return;const g=grid[y][x];
-  if(g.f)return;
-  if(g.o){ // chord
-    if(!g.n)return;
+  if(g.f!==0)return;
+  if(g.o){ // abrir vizinhos (chord)
+    if(!g.a)return;
     const nb=neighbors(x,y);
-    if(nb.filter(([a,b])=>grid[b][a].f).length===g.n)nb.forEach(([a,b])=>{if(!grid[b][a].f&&!grid[b][a].o)reveal(a,b)});
+    const fl=nb.filter(([a,b])=>grid[b][a].f!==0).length;
+    const sum=nb.reduce((s,[a,b])=>s+grid[b][a].f,0);
+    if(fl>0&&sum===g.n)nb.forEach(([a,b])=>{if(grid[b][a].f===0&&!grid[b][a].o)reveal(a,b)});
     return;
   }
   if(!started){started=true;place(x,y);startTimer()}
-  if(g.m){return lose(x,y)}
-  // flood fill with stagger
+  if(g.m!==0)return lose(x,y);
   const q=[[x,y,0]];g.o=true;
   while(q.length){
-    const [cx,cy,d]=q.shift();const c=grid[cy][cx];openCell(cx,cy,d);
-    if(c.n===0)for(const [a,b] of neighbors(cx,cy)){const t=grid[b][a];
-      if(!t.o&&!t.f&&!t.m){t.o=true;q.push([a,b,d+1])}}
+    const [cx,cy,d]=q.shift();openCell(cx,cy,d);
+    if(grid[cy][cx].a===0)for(const [a,b] of neighbors(cx,cy)){const t=grid[b][a];
+      if(!t.o&&t.f===0&&t.m===0){t.o=true;q.push([a,b,d+1])}}
   }
-  if(opened===C*R-M)win();
+  if(opened===C*R-countMineCells())win();
 }
+function countMineCells(){let k=0;for(const row of grid)for(const g of row)if(g.m!==0)k++;return k}
 function openCell(x,y,d){
   const g=grid[y][x],e=el(x,y);opened++;
-  if(g.f){g.f=false;flags--;$('#mines').textContent=pad(M-flags)}
-  e.classList.remove('flagged','spawn');e.classList.add('open');e.style.animationDelay=(d*35)+'ms';
-  if(g.n){e.textContent=g.n;e.classList.add('n'+g.n)}
+  e.innerHTML='';e.classList.remove('flagged','negflag','spawn');e.classList.add('open');
+  e.style.animationDelay=(d*35)+'ms';
+  if(g.a>0){
+    const t=String(g.n);e.textContent=t;
+    e.classList.add('n'+(g.n===0?0:((Math.abs(g.n)-1)%8)+1));
+    if(g.n<0)e.classList.add('neg');
+    if(t.length>=3)e.classList.add('long');
+  }
 }
+function mineHTML(m){return '<span>💣</span>'+(m<0?'<i class="badge neg">−</i>':m>1?`<i class="badge">×${m}</i>`:'')}
 function lose(x,y){
   over=true;clearInterval(timer);faceEl.textContent='😵';
-  const bomb=el(x,y);
   const mines=[];
   for(let j=0;j<R;j++)for(let i=0;i<C;i++){const g=grid[j][i];
-    if(g.m&&!g.f)mines.push([i,j]);
-    else if(!g.m&&g.f)el(i,j).classList.add('wrong');}
+    if(g.m!==0&&g.f!==g.m)mines.push([i,j]);
+    else if(g.m===0&&g.f!==0)el(i,j).classList.add('wrong');}
   mines.sort((a,b)=>Math.hypot(a[0]-x,a[1]-y)-Math.hypot(b[0]-x,b[1]-y));
+  const step=Math.max(12,Math.min(60,900/mines.length));
   mines.forEach(([i,j],k)=>setTimeout(()=>{
-    const e=el(i,j);e.classList.remove('flagged');e.classList.add('open','mine');e.textContent='💣';
+    const e=el(i,j),m=grid[j][i].m;
+    e.classList.remove('flagged','negflag');e.classList.add('open','mine');
+    if(m<0)e.classList.add('negmine');
+    e.innerHTML=mineHTML(m);
     if(i===x&&j===y){e.classList.add('boom');boardEl.classList.add('shake');burst(e,40,['#ef4444','#f97316','#fde047'])}
-    else if(k%4===0)burst(e,10,['#ef4444','#f97316']);
-  },k*(i0(mines.length))));
-  setTimeout(()=>modal('💥','Boom!','Você pisou numa mina. Tente de novo!'),mines.length*i0(mines.length)+700);
+    else if(k%4===0)burst(e,10,m<0?['#38bdf8','#818cf8']:['#ef4444','#f97316']);
+  },k*step));
+  setTimeout(()=>modal('💥','Boom!','Você pisou numa mina. Tente de novo!'),mines.length*step+700);
 }
-function i0(n){return Math.max(12,Math.min(60,900/n))}
 function win(){
   over=true;clearInterval(timer);faceEl.textContent='😎';
   for(let j=0;j<R;j++)for(let i=0;i<C;i++){const g=grid[j][i];
-    if(g.m&&!g.f){const e=el(i,j);e.classList.add('flagged');e.innerHTML='<span class="flag">🚩</span>'}}
-  $('#mines').textContent=pad(0);
+    if(g.m!==0&&g.f!==g.m){g.f=g.m;renderFlag(i,j)}}
+  fsum=NET;setCounter();
   cells.forEach((e,k)=>{e.style.animationDelay=((k%C+(k/C|0))*40)+'ms'});
   boardEl.classList.add('win');
   let rec='';try{const b=+localStorage.getItem(bestKey());
@@ -228,7 +370,7 @@ function win(){
 }
 function modal(e,t,p){$('#mEmoji').textContent=e;$('#mTitle').textContent=t;$('#mText').textContent=p;$('#overlay').classList.add('show')}
 
-/* particles */
+/* ---------- partículas ---------- */
 const cv=$('#fx'),ctx=cv.getContext('2d');let parts=[],raf=0;
 function resize(){cv.width=innerWidth;cv.height=innerHeight}resize();addEventListener('resize',resize);
 function burst(elm,n,colors){const r=elm.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
@@ -245,14 +387,12 @@ function loop(){if(raf)return;raf=requestAnimationFrame(function f(){
     p.rot?ctx.fillRect(p.x,p.y,p.sz,p.sz*.6):(ctx.beginPath(),ctx.arc(p.x,p.y,p.sz,0,6.28),ctx.fill())}
   raf=parts.length?requestAnimationFrame(f):0;if(!raf)ctx.clearRect(0,0,cv.width,cv.height)})}
 
-/* UI */
+/* ---------- UI ---------- */
 function restart(){$('#overlay').classList.remove('show');init()}
 faceEl.onclick=restart;$('#again').onclick=restart;
-$('#levels').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-  level=b.dataset.l;document.querySelectorAll('#levels button').forEach(x=>x.classList.toggle('active',x===b));restart()});
 $('#flagMode').onclick=e=>{flagMode=!flagMode;e.currentTarget.classList.toggle('on',flagMode)};
-addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R')restart()});
-init();
+addEventListener('keydown',e=>{if((e.key==='r'||e.key==='R')&&$('#game').classList.contains('active'))restart()});
+buildMenu();
 </script>
 </body>
 </html>
