@@ -124,6 +124,20 @@
   .n5{color:#ffb454}.n6{color:#4fe3e3}.n7{color:#ff7ac8}.n8{color:#e6f0f7}
   .cell.open[class*=" n"]{text-shadow:-1px 0 #ff5c93aa,1px 0 #4fd8e8aa}
   .cell.open.neg{background:#0a2145;box-shadow:inset 0 0 0 2px #2d6fd0}
+  /* a pilha de bandeiras/bombas ocupa SEMPRE o mesmo quadrado, centralizado: 1 grande; 2 ou 3 juntas cabem no mesmo espaço */
+  #board{--fb:calc(var(--cell)*.74)}
+  #board.shapes{--fb:calc(var(--cell)*.6)}
+  #board.tri{--fb:calc(var(--cell)*.46)}
+  .demo{--fb:calc(var(--cell)*.74)}
+  .stack{position:relative;width:var(--fb);height:var(--fb);pointer-events:none;flex:none}
+  .stack>span{position:absolute;display:block;font-size:calc(var(--cell)*.4)}
+  .stack>span .px{width:100%;height:100%;display:block;vertical-align:top}
+  .stack.s1>span{left:0;top:0;width:100%;height:100%}
+  .stack.s2>span:nth-child(1){left:0;top:0;width:64%;height:64%}
+  .stack.s2>span:nth-child(2){right:0;bottom:0;width:64%;height:64%}
+  .stack.s3>span:nth-child(1){left:22%;top:0;width:56%;height:56%}
+  .stack.s3>span:nth-child(2){left:0;bottom:0;width:56%;height:56%}
+  .stack.s3>span:nth-child(3){right:0;bottom:0;width:56%;height:56%}
   .flag{display:inline-block}
   .flaglayer{position:absolute;inset:3px;display:flex;align-items:center;justify-content:center;pointer-events:none}
   .flaglayer.cover{background:inherit}
@@ -134,11 +148,6 @@
   @keyframes asmDn{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
   .flag.neg{filter:hue-rotate(180deg) saturate(1.3) drop-shadow(0 0 4px #4fa8ff)}
   @keyframes flagpop{from{transform:scale(0) translateY(-14px)}}
-  .stack{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;line-height:1.05;pointer-events:none}
-  .stack.s2{font-size:calc(var(--cell)*.4)}
-  .stack.s3{font-size:calc(var(--cell)*.34);width:calc(var(--cell)*.92)}
-  #board.shapes .stack.s2{font-size:calc(var(--cell)*.34)}
-  #board.shapes .stack.s3{font-size:calc(var(--cell)*.3);width:calc(var(--cell)*.82)}
   .badge{position:absolute;right:1px;bottom:0;font-family:var(--pix);font-size:calc(var(--cell)*.26);line-height:1;font-style:normal;
     background:#000c;color:#fff;border-radius:2px;padding:2px 3px;animation:flagpop .3s}
   .badge.neg{color:#8ec5ff}
@@ -214,8 +223,6 @@
   #board.torus{padding:6px;outline:2px dashed var(--cyan);outline-offset:3px;border-radius:3px}
   #board.tri .cell{font-size:calc(var(--cell)*.32)}
   #board.tri .cell.long{font-size:calc(var(--cell)*.24)}
-  #board.tri .stack.s2{font-size:calc(var(--cell)*.3)}
-  #board.tri .stack.s3{font-size:calc(var(--cell)*.26);width:calc(var(--cell)*.7)}
   #toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,20px);opacity:0;z-index:9;background:var(--panel2);border:2px solid var(--cyan);color:var(--cyan);
     padding:10px 18px;border-radius:3px;font-size:15px;font-weight:600;transition:.3s;pointer-events:none}
   #toast.show{opacity:1;transform:translate(-50%,0)}
@@ -275,7 +282,6 @@
     border:2px solid var(--line);background:var(--panel);transition:.15s}
   #sound:hover{border-color:var(--cyan);transform:translateY(-2px)}
   .px{width:1.2em;height:1.2em;image-rendering:pixelated;vertical-align:-.25em;display:inline-block;pointer-events:none}
-  .stack .px{vertical-align:middle}
   body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,transparent 0 2px,#0000001f 2px 3px)}
   .cell.chordprev:not(.open){filter:brightness(1.6);background:#2a6aa0}
   .cell.chordprev.open{box-shadow:inset 0 0 0 2px var(--cyan)}
@@ -1395,7 +1401,15 @@ function sprite(ch){
       d[i+3]=255;solid++;pix.push({x:(i/4)%PXN,y:Math.floor(i/4/PXN),rgb:null,i});
       for(let k=0;k<3;k++)d[i+k]=Math.min(255,Math.round(d[i+k]/64)*64); // paleta reduzida
     }
-    if(solid>6){c.putImageData(im,0,0);url=cv.toDataURL();pix.forEach(q=>{q.rgb=[d[q.i],d[q.i+1],d[q.i+2]]});spritePix.set(ch,pix)}
+    if(solid>6){
+      c.putImageData(im,0,0);
+      // centraliza o desenho no quadrado (os emojis costumam vir deslocados)
+      let x0=PXN,x1=0,y0=PXN,y1=0;pix.forEach(q=>{x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);y0=Math.min(y0,q.y);y1=Math.max(y1,q.y)});
+      const dx=Math.round((PXN-1)/2-(x0+x1)/2),dy=Math.round((PXN-1)/2-(y0+y1)/2);
+      if(dx||dy){const c2=document.createElement('canvas');c2.width=c2.height=PXN;c2.getContext('2d').drawImage(cv,dx,dy);url=c2.toDataURL()}
+      else url=cv.toDataURL();
+      pix.forEach(q=>{q.rgb=[d[q.i],d[q.i+1],d[q.i+2]];q.x+=dx;q.y+=dy});spritePix.set(ch,pix);
+    }
   }catch(e){}
   spriteCache.set(ch,url);return url;
 }
