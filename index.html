@@ -970,7 +970,9 @@ function stackHTML(ch,n,cls){ // n emojis desenhados, um por bandeira/bomba
   return h+'</div>';
 }
 function toggleFlag(x,y){
-  if(over)return;const g=grid[y][x];if(g.o)return;
+  if(over)return;
+  if(!started){toast('Abra uma casa antes de marcar bandeiras');return}
+  const g=grid[y][x];if(g.o)return;
   const nf=nextFlag(g.f);fsum+=nf-g.f;g.f=nf;g.fo=turn;renderFlag(x,y);setCounter();SFX.flag(nf);
 }
 /* jogada do jogador: abre casa/vizinhos; no duelo pontua e passa a vez */
