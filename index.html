@@ -52,7 +52,7 @@
   .mode:nth-child(2) .ic{animation-delay:-1s}.mode:nth-child(3) .ic{animation-delay:-2s}
   @keyframes bob{50%{transform:translateY(-6px) rotate(6deg)}}
   .mode b{display:block;font-size:17px;margin:6px 0 4px}
-  .mode span{font-size:12px;line-height:1.4;color:var(--muted);display:block}
+  .mode .d{font-size:12px;line-height:1.4;color:var(--muted);display:block}
   .levels{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
   .lvl{border:1px solid var(--stroke);background:var(--glass);color:var(--text);padding:10px 20px;border-radius:14px;
     font:600 15px inherit;cursor:pointer;transition:.2s}
@@ -81,7 +81,7 @@
   #face:hover{transform:rotate(-8deg) scale(1.1)}
   #face:active{transform:scale(.9)}
   .boardwrap{overflow:auto;max-width:calc(100vw - 72px);max-height:62vh;padding:6px;border-radius:16px;background:#0004}
-  #board{display:grid;gap:3px;width:max-content;margin:0 auto}
+  #board{display:grid;gap:3px;width:max-content;margin:0 auto;position:relative}
   .cell{
     width:var(--cell);height:var(--cell);border-radius:8px;display:flex;align-items:center;justify-content:center;
     font:800 calc(var(--cell)*.52) inherit;cursor:pointer;position:relative;
@@ -152,6 +152,82 @@
     background:linear-gradient(135deg,var(--accent),#6366f1);box-shadow:0 8px 24px #8b5cf666;transition:.2s}
   .modal button.alt{background:#ffffff18;box-shadow:none}
   .modal button:hover{transform:translateY(-2px) scale(1.04)}
+  .qm{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font:800 12px/1 inherit;
+    background:#ffffff1f;border:1px solid var(--stroke);color:var(--text);cursor:help;transition:.2s;flex:none}
+  .qm:hover{background:var(--accent);transform:scale(1.2) rotate(8deg);border-color:transparent}
+  .mode .qm{position:absolute;top:10px;right:10px;z-index:2}
+  .lvl .qm{margin-left:8px;vertical-align:middle}
+  .mode.mixing::before{content:"☐";position:absolute;top:10px;left:12px;font-size:18px;color:var(--muted)}
+  .mode.mixing.sel::before{content:"☑";color:var(--accent2)}
+  .mode.mixing .ic{margin-left:22px}
+  .labelrow{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+  .mixsw{display:inline-flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:14px;font-weight:700;color:var(--text)}
+  .mixsw input{display:none}
+  .mixsw .sw{width:42px;height:24px;border-radius:999px;background:#ffffff22;border:1px solid var(--stroke);position:relative;transition:.25s}
+  .mixsw .sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.25s}
+  .mixsw input:checked+.sw{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+  .mixsw input:checked+.sw::after{transform:translateX(18px)}
+  #mixHint{min-height:16px;font-size:12px;color:var(--accent2);margin:6px 0 -4px}
+  .duelbar{display:flex;gap:10px;margin-bottom:12px}
+  .duelbar[hidden]{display:none}
+  .duelbar .pl{flex:1;display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:12px;background:#0005;border:1px solid var(--stroke);font-weight:700;font-size:13px;opacity:.55;transition:.3s}
+  .duelbar .pl b{font:800 20px "Courier New",monospace}
+  .duelbar .pl.on{opacity:1;transform:scale(1.04)}
+  #p0.on{border-color:#3b82f6;box-shadow:0 0 18px #3b82f699}
+  #p1.on{border-color:#f97316;box-shadow:0 0 18px #f9731699}
+  #game.duel[data-turn="0"] .boardwrap{box-shadow:0 0 0 2px #3b82f6aa}
+  #game.duel[data-turn="1"] .boardwrap{box-shadow:0 0 0 2px #f97316aa}
+  #board .cell.open.op0{background:#102a63}
+  #board .cell.open.op1{background:#5a2a0c}
+  .tool[hidden]{display:none}
+  .tool:disabled{opacity:.4;cursor:not-allowed}
+  #board.radar .cell{cursor:crosshair}
+  .cell.scan::after{content:"";position:absolute;inset:0;background:#22d3ee;opacity:0;pointer-events:none;animation:scanflash .9s var(--sd,0ms) both}
+  @keyframes scanflash{0%{opacity:0}30%{opacity:.7}100%{opacity:0}}
+  .rmark{position:absolute;z-index:6;transform:translate(-50%,-50%);background:#0e7490;color:#fff;font:800 11px/1 inherit;padding:3px 6px;border-radius:8px;
+    pointer-events:none;animation:flagpop .4s;box-shadow:0 2px 8px #0008;white-space:nowrap}
+  .rmark.neg{background:#1d4ed8}
+  .hp{color:#c084fc}.hge{color:#4ade80}.hle{color:#fb923c}
+  .cell.hint{font-size:calc(var(--cell)*.34)}
+  .cell.open.hint{text-shadow:0 0 10px currentColor}
+  .cell.liar{background:#4a1d2e!important}
+  #board.torus{padding:6px;border-radius:14px;box-shadow:0 0 0 2px #22d3ee88,0 0 24px #22d3ee44;animation:torusglow 3s ease-in-out infinite}
+  @keyframes torusglow{50%{box-shadow:0 0 0 2px #a78bfa99,0 0 30px #a78bfa55}}
+  #board.tri .cell{font-size:calc(var(--cell)*.42)}
+  #board.tri .cell.long{font-size:calc(var(--cell)*.34)}
+  #board.tri .stack.s2{font-size:calc(var(--cell)*.3)}
+  #board.tri .stack.s3{font-size:calc(var(--cell)*.26);width:calc(var(--cell)*.7)}
+  #toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,20px);opacity:0;z-index:9;background:#0f172af0;border:1px solid var(--stroke);
+    padding:10px 18px;border-radius:12px;font-size:14px;transition:.3s;pointer-events:none}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  #tut{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:#020617cc;backdrop-filter:blur(5px);
+    opacity:0;pointer-events:none;transition:.3s;padding:16px}
+  #tut.show{opacity:1;pointer-events:auto}
+  .tutbox{position:relative;width:480px;max-width:100%;max-height:92vh;overflow:auto;background:linear-gradient(160deg,#1e1b4bf5,#0f172af5);
+    border:1px solid var(--stroke);border-radius:24px;padding:24px;transform:scale(.85) translateY(30px);transition:.4s cubic-bezier(.2,1.3,.4,1)}
+  #tut.show .tutbox{transform:none}
+  .tutbox h2{margin:0 0 14px;text-align:center}
+  .tutbox .x{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:10px;border:1px solid var(--stroke);background:var(--glass);color:var(--text);cursor:pointer}
+  .tutbox ul{margin:14px 0;padding-left:20px;line-height:1.5;font-size:14px;color:#cbd5e1}
+  .tutbox li{margin-bottom:6px}
+  .tutbox .play{margin:6px auto 0;display:block;padding:11px 36px;font-size:15px}
+  .demo{--cell:42px;background:#0005;border-radius:16px;padding:16px 10px 10px;min-height:190px}
+  .dgrid{display:grid;gap:3px;width:max-content;margin:0 auto}
+  .demo .cell{cursor:default}
+  .demo .cell:hover{transform:none;filter:none}
+  .dcap{margin-top:12px;text-align:center;font-size:13px;line-height:1.4;min-height:38px;color:var(--text);animation:capin .4s}
+  @keyframes capin{from{opacity:0;transform:translateY(6px)}}
+  .ptr{position:absolute;right:-6px;bottom:-12px;font-size:22px;font-style:normal;z-index:5;pointer-events:none;animation:tap .8s ease-in-out infinite}
+  @keyframes tap{50%{transform:translate(-4px,-6px) scale(.9)}}
+  .scanring{position:absolute;inset:0;border-radius:8px;background:#22d3ee33;box-shadow:inset 0 0 0 2px #22d3ee;animation:ringp 1s ease-in-out infinite;pointer-events:none}
+  .cell.hl::after{content:"";position:absolute;inset:-3px;border:2px solid #fde047;border-radius:10px;animation:ringp 1s ease-in-out infinite;pointer-events:none}
+  @keyframes ringp{50%{opacity:.35;transform:scale(1.06)}}
+  .dsvgw{width:min(300px,100%);margin:0 auto;border-radius:12px}
+  .dsvgw.torus{box-shadow:0 0 0 2px #22d3ee88,0 0 22px #22d3ee44}
+  .dsvg{display:block;width:100%}
+  .dsvg polygon{fill:#4c4f8f;transition:fill .3s}
+  .dsvg polygon.nb{fill:#22d3ee}
+  .dsvg polygon.sel{fill:#fde047}
   #sound{position:fixed;top:12px;right:12px;z-index:7;width:44px;height:44px;border-radius:14px;font-size:20px;cursor:pointer;
     border:1px solid var(--stroke);background:var(--glass);backdrop-filter:blur(10px);color:var(--text);transition:.2s}
   #sound:hover{transform:scale(1.1) rotate(-6deg)}
@@ -167,7 +243,9 @@
 <div class="screen active" id="menu">
   <h1>💣 CAMPO MINADO</h1>
   <p class="sub">Escolha um modo de jogo e a dificuldade</p>
-  <div class="label">Modo</div>
+  <div class="label labelrow">Modo
+    <label class="mixsw"><input type="checkbox" id="mixBox"><span class="sw"></span> Mix <span class="qm" data-tut="mix" title="Como funciona">?</span></label></div>
+  <div id="mixHint"></div>
   <div class="modes" id="modes"></div>
   <div class="label">Piso</div>
   <div class="levels" id="floors"></div>
@@ -187,9 +265,16 @@
     <button id="face" title="Reiniciar">🙂</button>
     <div class="stat"><span>⏱</span><b id="time">000</b></div>
   </div>
+  <div class="duelbar" id="duel" hidden>
+    <div class="pl" id="p0"><span>🔵 Jogador 1</span><b id="sc0">0</b></div>
+    <div class="pl" id="p1"><span>🟠 Jogador 2</span><b id="sc1">0</b></div>
+  </div>
   <div class="boardwrap"><div id="board"></div></div>
   <div class="foot">
-    <button class="tool" id="flagMode">🚩 Modo bandeira</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="tool" id="flagMode">🚩 Modo bandeira</button>
+      <button class="tool" id="radarBtn" hidden>📡 Radar</button>
+    </div>
     <div>Recorde: <span class="best" id="best">—</span></div>
   </div>
   <div class="foot" id="help"></div>
@@ -198,44 +283,138 @@
 <div id="overlay"><div class="modal"><div class="big" id="mEmoji"></div><h2 id="mTitle"></h2><p id="mText"></p>
   <div class="row"><button id="again">Jogar de novo</button><button id="toMenu" class="alt">Menu</button></div></div></div>
 <canvas id="fx"></canvas>
+<div id="toast"></div>
+<div id="tut"><div class="tutbox"><button class="x" id="tutX">✕</button><h2 id="tutT"></h2>
+  <div class="demo" id="tutDemo"></div><ul id="tutL"></ul><button class="play" id="tutOk">Entendi</button></div></div>
 
 <script>
 const LEVELS={
-  easy:{c:9,r:9,m:10,name:'Fácil'},
-  medium:{c:16,r:16,m:40,name:'Médio'},
-  hard:{c:30,r:16,m:99,name:'Difícil'}
+  easy:{c:9,r:9,m:10,name:'Fácil',emoji:'🌱'},
+  medium:{c:16,r:16,m:40,name:'Médio',emoji:'⚡'},
+  hard:{c:30,r:16,m:99,name:'Difícil',emoji:'🔥'},
+  insane:{c:36,r:22,m:180,name:'Super difícil',emoji:'💀'}
 };
+const RADAR={easy:3,medium:5,hard:8,insane:12};
+const LIARS={easy:1,medium:2,hard:3,insane:5};
+const PN=['🔵 Jogador 1','🟠 Jogador 2'];
+
+/* quadros dos mini-tutoriais: cada frame é uma grade 5×3 de "tokens"
+   . fechada · _ aberta vazia · número · F/FF/FFF bandeiras · N/NN/NNN bandeiras negativas
+   B/BB/BBB bombas · X negativa · ~texto dica · sufixos: * destaque, > dedo, ^ radar, :a/:b dono (duelo) */
+const fr=(cap,s,ms)=>({cap,cells:s.trim().split(/\s+/),ms});
+
 const MODES={
-  classic:{name:'Clássico',icon:'💣',mult:1,
-    desc:'O campo minado de sempre.',
-    help:'Clique direito / segurar = bandeira · clique num número = abrir vizinhos'},
-  negative:{name:'Negativo',icon:'➖',mult:1,
-    desc:'Existem minas negativas! Elas subtraem dos números e pedem bandeira azul (−). Um 0 pode esconder minas que se cancelam.',
-    help:'Clique direito: 🚩 mina (+) → 🚩 azul mina negativa (−) → remover. Os números são a soma (+1 e −1 se cancelam). O contador mostra a soma restante.'},
-  multi:{name:'Multi-bombas',icon:'💥',mult:1.3,
-    desc:'Um quadrado pode ter até 3 bombas. Coloque várias bandeiras no mesmo quadrado.',
-    help:'Clique direito repetido: 1 → 2 → 3 bandeiras no mesmo quadrado → remover. Cada bomba conta no número.'},
-  chaos:{name:'Caos',icon:'🌀',mult:1.3,
-    desc:'Negativo + Multi-bombas juntos: minas negativas e até 3 bombas por quadrado. Boa sorte!',
-    help:'Clique direito repetido: 🚩 1→2→3 (positivas), depois 🚩 azuis −1→−2→−3 (negativas) → remover. Números = soma de todas as bombas vizinhas. O contador mostra a soma restante.'}
+  classic:{name:'Clássico',icon:'💣',desc:'O campo minado de sempre.',
+    help:'Clique direito / segurar = bandeira · clique num número = abrir vizinhos',
+    rules:['Clique numa casa para abrir. O número mostra quantas minas existem nos vizinhos.','Clique direito (ou segure o dedo) marca uma bandeira 🚩.','Clique num número cercado pelas bandeiras certas para abrir os vizinhos de uma vez.','Abra todas as casas sem mina para vencer. A primeira jogada é sempre segura.'],
+    frames:[
+      fr('Clique numa casa para abri-la.','. . . . .  . . .> . .  . . . . .'),
+      fr('O número mostra quantas minas existem nos 8 vizinhos.','. . . . .  . . 2* . .  . . . . .'),
+      fr('Clique direito (ou segure) para marcar 🚩 onde achar que há mina.','. . F> . .  . . 2 . .  . . . F .'),
+      fr('Com as bandeiras certas, clique no número: os vizinhos abrem de uma vez!','. 1 F 1 .  . 1 2> 2 .  . _ 1 F .'),
+      fr('Abra todas as casas seguras para vencer! 🎉','. 1 F 1 .  . 1 2 2 .  . _ 1 F .')]},
+  negative:{name:'Negativo',icon:'➖',
+    desc:'Existem minas negativas! Elas subtraem dos números e pedem bandeira azul (−).',
+    help:'Clique direito: 🚩 mina (+) → 🚩 azul (−) → remover · números = soma das minas',
+    rules:['Cerca de 30% das minas são negativas (bandeira azul).','Os números são a soma: mina normal = +1, negativa = −1. Elas se cancelam.','Um 0 pode esconder minas, por isso ele não abre os vizinhos sozinho.','Clique direito: 🚩 mina → 🚩 azul (negativa) → remover. O contador mostra a soma restante.'],
+    frames:[
+      fr('Há minas normais 💣 e minas negativas (azuis).','. . . . .  . B . X .  . . . . .'),
+      fr('Os números somam tudo: +1 e −1 se cancelam e dão 0. Um 0 pode esconder minas!','. . . . .  . . 0* . .  . . . . .'),
+      fr('Clique direito: 🚩 positiva, de novo: 🚩 azul (negativa).','. . . . .  . F 0 N> .  . . . . .')]},
+  multi:{name:'Multi-bombas',icon:'💥',
+    desc:'Um quadrado pode ter até 3 bombas. Use várias bandeiras no mesmo quadrado.',
+    help:'Clique direito repetido: 1 → 2 → 3 bandeiras no mesmo quadrado → remover',
+    rules:['Cada casa pode guardar de 1 a 3 bombas (cerca de 30% mais bombas no total).','Cada bomba conta no número.','Clique direito repetido: 1 → 2 → 3 bandeiras → remover. Uma bandeira desenhada por bomba.'],
+    frames:[
+      fr('Uma casa pode guardar até 3 bombas!','. . . . .  . BBB . B .  . . . . .'),
+      fr('Cada bomba conta no número: 3 + 1 = 4.','. . . . .  . . 4* . .  . . . . .'),
+      fr('Clique direito: 1 bandeira…','. . . . .  . F> . . .  . . . . .'),
+      fr('…2 bandeiras…','. . . . .  . FF> . . .  . . . . .'),
+      fr('…3 bandeiras no mesmo quadrado!','. . . . .  . FFF> . . .  . . . . .')]},
+  liar:{name:'Mentirosos',icon:'🤥',
+    desc:'Algumas casas mostram um número errado em ±1. Desconfie!',
+    help:'Algumas casas mentem em ±1 (reveladas com 🤥 no fim)',
+    rules:['Em 1 (Fácil), 2 (Médio), 3 (Difícil) ou 5 (Super difícil) casas, o número mostrado está errado em ±1.','Você não sabe quais são: se as contas não fecharem, desconfie!','No fim da partida, os mentirosos abertos ganham 🤥.','Cuidado: clicar num número para abrir vizinhos usa o valor mostrado, que pode ser mentira.'],
+    frames:[
+      fr('Normalmente o número diz a verdade: 1 mina por perto.','. . . . .  . . 1* . .  . . . . .'),
+      fr('Mas em algumas casas o número MENTE em ±1!','. . . . .  . . 2* . .  . . . . .'),
+      fr('Aqui mostra 2, mas só existe 1 mina. Compare com as vizinhas para descobrir! 🤥','. . . . .  . B 2* . .  . . . . .')]},
+  partial:{name:'Dicas parciais',icon:'🧩',
+    desc:'Os números viram dicas: par/ímpar, "pelo menos" ou "no máximo".',
+    help:'Dicas: par/ímp · ≥N = pelo menos · ≤N = no máximo (clicar no número não abre vizinhos)',
+    rules:['Os números viram dicas parciais: par/ímp (paridade), ≥N (pelo menos N) ou ≤N (no máximo N).','Todas as dicas são verdadeiras: cruze várias para deduzir.','Clicar num número não abre os vizinhos neste modo.'],
+    frames:[
+      fr('Os números viram dicas. "par" / "ímp" = a soma das minas vizinhas é par ou ímpar.','. . . . .  . . ~par* . .  . . . . .'),
+      fr('"≥2" = pelo menos 2 minas. "≤1" = no máximo 1 mina.','. . . . .  . ~≥2* ~ímp ~≤1* .  . . . . .'),
+      fr('Cruze várias dicas para deduzir onde estão as minas.','. . . . .  . ~≥2 ~ímp* ~≤1 .  . F . . .')]},
+  detector:{name:'Detector',icon:'📡',
+    desc:'Poucas cargas de radar que somam as bombas numa área 5×5.',
+    help:'Botão 📡 Radar: escaneia a área 5×5 ao redor da casa e mostra a soma de bombas',
+    rules:['Você tem poucas cargas de radar por partida (3 / 5 / 8 / 12).','Toque em 📡 Radar e depois em qualquer casa: ele escaneia a área 5×5 (duas camadas de vizinhos).','O resultado é a soma das bombas na área e fica marcado no tabuleiro.','É preciso abrir uma casa antes de usar o radar.'],
+    frames:[
+      fr('Ative 📡 Radar (poucas cargas por partida) e toque numa casa.','. . . . .  . . .> . .  . . . . .'),
+      fr('O radar escaneia a área 5×5 ao redor…','^ ^ ^ ^ ^  ^ ^ ^> ^ ^  ^ ^ ^ ^ ^'),
+      fr('…e mostra a SOMA das bombas dentro dela. Aqui: 4!','^ ^ ^ ^ ^  ^ ^ ~Σ4* ^ ^  ^ ^ ^ ^ ^')]},
+  duel:{name:'Duelo',icon:'⚔️',
+    desc:'Dois jogadores no mesmo aparelho se alternam. Quem abrir uma mina perde!',
+    help:'🔵 e 🟠 se alternam · 1 ponto por casa aberta · mina = derrota · bandeira certa +2, errada −2',
+    rules:['Dois jogadores no mesmo aparelho, se alternando: 🔵 e 🟠.','Cada casa aberta vale 1 ponto e fica com a cor de quem abriu. Bandeiras não gastam a vez.','Quem abrir uma mina perde na hora!','Se o campo for limpo, vence quem tiver mais pontos. No fim, bandeira certa +2 e errada −2.'],
+    frames:[
+      fr('🔵 abre uma casa e marca ponto.','. . . . .  . . 1:a> . .  . . . . .'),
+      fr('Agora é a vez da 🟠.','. . . . .  . 1:b> 1:a . .  . . . . .'),
+      fr('Quem abrir uma MINA perde na hora!','. . . . .  . 1:b 1:a B> .  . . . . .'),
+      fr('Se ninguém explodir, vence quem tiver mais pontos. Bandeira certa +2, errada −2.','. . . . .  . 1:b 1:a F .  . . . . .')]}
 };
+const MIXINFO={name:'Mix',icon:'🎛️',
+  rules:['Marque a caixa Mix para escolher vários modos e jogar todos de uma vez.','Qualquer combinação funciona, por exemplo Negativo + Multi-bombas + Detector.','Sem nenhum modo marcado, joga o Clássico.','O piso (quadrado, irregular, triangular ou toroidal) é um só por vez.'],
+  frames:[
+    fr('Mix: você marca vários modos e joga todos juntos.','. . . . .  . . . . .  . . . . .'),
+    fr('➖ Negativo + 💥 Multi-bombas: bombas negativas e empilhadas.','. . . . .  . XX . BBB .  . . . . .'),
+    fr('+ 🤥 Mentirosos: este 2 pode estar mentindo.','. . . . .  . XX 2* BBB .  . . . . .'),
+    fr('+ 📡 Detector: o radar soma bombas positivas e negativas (−2 + 3 = 1).','^ ^ ^ ^ ^  ^ XX ~Σ1* BBB ^  ^ ^ ^ ^ ^')]};
+const FLOORS={
+  square:{icon:'▦',name:'Quadrados',
+    rules:['O tabuleiro tradicional: casas quadradas em linhas e colunas.','Cada casa tem até 8 vizinhas, incluindo as diagonais.'],
+    cap:n=>`Cada casa tem 8 vizinhas: as que encostam, inclusive nas diagonais.`},
+  irr:{icon:'⬢',name:'Irregular',
+    rules:['Cada casa é um polígono diferente, sorteado a cada partida.','Vizinhas são as casas que dividem uma borda: cada uma pode ter de 3 a 8.','O número mostra as bombas só nessas vizinhas.'],
+    cap:n=>`Vizinhas são as casas que dividem uma borda. Esta tem ${n}.`},
+  tri:{icon:'🔺',name:'Triangular',
+    rules:['O piso é feito de triângulos.','Cada triângulo tem 12 vizinhos: todos os que encostam, até só num vértice.','Os números ficam maiores, então fique atento!'],
+    cap:n=>`Cada triângulo tem ${n} vizinhos: todos que encostam, até só num vértice.`},
+  torus:{icon:'🍩',name:'Toroidal',
+    rules:['As bordas se conectam: o lado esquerdo encosta no direito e o de cima no de baixo, como num donut.','Todas as casas têm 8 vizinhas: não existem cantos nem bordas seguros.','Os cantos opostos do tabuleiro são vizinhos!'],
+    cap:n=>`As bordas se conectam! O canto é vizinho do lado oposto (${n} vizinhas).`}
+};
+const TUTS={};
+Object.entries(MODES).forEach(([k,m])=>TUTS[k]={title:`${m.icon} ${m.name}`,rules:m.rules,frames:m.frames});
+TUTS.mix={title:`${MIXINFO.icon} ${MIXINFO.name}`,rules:MIXINFO.rules,frames:MIXINFO.frames};
+Object.entries(FLOORS).forEach(([k,f])=>TUTS['floor-'+k]={title:`${f.icon} Piso ${f.name}`,rules:f.rules,floor:k});
+
 const $=s=>document.querySelector(s);
 const boardEl=$('#board'),faceEl=$('#face');
-let mode='classic',level='easy',shapes=false;
-try{mode=localStorage.getItem('ms-mode')||mode;level=localStorage.getItem('ms-level')||level;shapes=localStorage.getItem('ms-shape')==='1'}catch(e){}
-if(!MODES[mode])mode='classic';if(!LEVELS[level])level='easy';
+let mode='classic',mix=false,sel=new Set(),floor='square',level='easy';
+try{
+  mode=localStorage.getItem('ms-mode')||mode;level=localStorage.getItem('ms-level')||level;floor=localStorage.getItem('ms-floor')||floor;
+  mix=localStorage.getItem('ms-mix')==='1';sel=new Set(JSON.parse(localStorage.getItem('ms-sel')||'[]'));
+}catch(e){}
+if(!MODES[mode])mode='classic';if(!LEVELS[level])level='easy';if(!FLOORS[floor])floor='square';
+sel=new Set([...sel].filter(k=>MODES[k]&&k!=='classic'));
+const A=()=>mix?(sel.size?new Set(sel):new Set(['classic'])):new Set([mode]);
+const isPoly=f=>f==='irr'||f==='tri';
+let cur=A(),shapes=isPoly(floor);
+const has=k=>cur.has(k);
 let C,R,M,NET,plan,adj=[],pts=[],grid,cells,started,over,fsum,opened,timer,secs,flagMode=false,touching=false;
+let turn=0,scores=[0,0],radar=[0,0],radarOn=false,pendingWin=false;
 
-const bombsFor=(m,l)=>Math.round(LEVELS[l].m*MODES[m].mult);
-const hasNeg=()=>mode==='negative'||mode==='chaos';
-const hasMulti=()=>mode==='multi'||mode==='chaos';
+const bombsFor=(l,set=A())=>Math.round(LEVELS[l].m*(set.has('multi')?1.3:1));
 function makePlan(){ // valores das minas (com sinal), sorteados antes da 1ª jogada
   const e=[];
   for(let i=0;i<M;i++){
-    if(hasMulti()&&e.length&&Math.random()<.35){const k=e[Math.random()*e.length|0];if(k<3){e[e.indexOf(k)]=k+1;continue}}
+    if(has('multi')&&e.length&&Math.random()<.35){const k=e[Math.random()*e.length|0];if(k<3){e[e.indexOf(k)]=k+1;continue}}
     e.push(1);
   }
-  if(hasNeg()){const n=Math.round(e.length*.3);
+  if(has('negative')){const n=Math.round(e.length*.3);
     e.map((v,i)=>i).sort(()=>Math.random()-.5).slice(0,n).forEach(i=>e[i]=-e[i])}
   return e;
 }
@@ -273,11 +452,13 @@ const SFX={
   chord(){tone(440,.06,'triangle',.1);tone(554,.08,'triangle',.1,.05)},
   flag(f){
     if(f===0)return tone(320,.09,'triangle',.08,0,190);
-    if(f<0){tone(260+f*20,.12,'sawtooth',.06,0,180);tone(190,.1,'square',.04,.04)} // negativa: grave e sombria
+    if(f<0){tone(260+f*20,.12,'sawtooth',.06,0,180);tone(190,.1,'square',.04,.04)}
     else{tone(620+f*110,.08,'square',.06);tone(930+f*110,.08,'square',.05,.05)}
   },
   boom(){noise(1,.55,2200,50);tone(130,.7,'sawtooth',.28,0,32)},
   pop(k){noise(.14,.14,1200,150);tone(200+(k%5)*25,.1,'square',.04)},
+  radar(){tone(300,.5,'sine',.1,0,1400);tone(1400,.15,'sine',.06,.5)},
+  turn(){tone(480,.07,'triangle',.08);tone(640,.09,'triangle',.08,.07)},
   win(){[523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,.28,'triangle',.13,i*.09));noise(.4,.05,6000,3000,.5)}
 };
 function syncSound(){$('#sound').textContent=muted?'🔇':'🔊'}
@@ -285,46 +466,146 @@ $('#sound').onclick=()=>{muted=!muted;try{localStorage.setItem('ms-mute',muted?'
 syncSound();
 
 /* ---------- menu ---------- */
-function buildMenu(){
-  $('#modes').innerHTML=Object.entries(MODES).map(([k,m])=>
-    `<button class="mode" data-k="${k}"><div class="ic">${m.icon}</div><b>${m.name}</b><span>${m.desc}</span></button>`).join('');
+function renderModes(){
+  const ks=Object.keys(MODES).filter(k=>!mix||k!=='classic');
+  $('#modes').innerHTML=ks.map(k=>{const m=MODES[k];
+    return `<button class="mode${mix?' mixing':''}" data-k="${k}"><span class="qm" data-tut="${k}" title="Como funciona">?</span><div class="ic">${m.icon}</div><b>${m.name}</b><span class="d">${m.desc}</span></button>`}).join('');
   refreshMenu();
 }
 function refreshMenu(){
-  $('#floors').innerHTML=[[false,'▦','Quadrados'],[true,'⬢','Formas irregulares']].map(([v,i,n])=>
-    `<button class="lvl${v===shapes?' sel':''}" data-v="${v}">${i} ${n}</button>`).join('');
-  document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('sel',b.dataset.k===mode));
+  $('#mixBox').checked=mix;
+  $('#mixHint').textContent=mix?(sel.size?'':'Marque 1 ou mais modos para combinar (nenhum = Clássico)'):'';
+  document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('sel',mix?sel.has(b.dataset.k):b.dataset.k===mode));
+  $('#floors').innerHTML=Object.entries(FLOORS).map(([k,f])=>
+    `<button class="lvl${k===floor?' sel':''}" data-k="${k}">${f.icon} ${f.name}<span class="qm" data-tut="floor-${k}" title="Como funciona">?</span></button>`).join('');
+  const multi=A().has('multi');
   $('#levels').innerHTML=Object.entries(LEVELS).map(([k,l])=>
-    `<button class="lvl${k===level?' sel':''}" data-k="${k}">${l.name}<small>${l.c}×${l.r} · ${bombsFor(mode,k)} ${hasMulti()?'bombas':'minas'}</small></button>`).join('');
+    `<button class="lvl${k===level?' sel':''}" data-k="${k}">${l.emoji} ${l.name}<small>${l.c}×${l.r} · ${bombsFor(k)} ${multi?'bombas':'minas'}</small></button>`).join('');
 }
-$('#modes').addEventListener('click',e=>{const b=e.target.closest('.mode');if(!b)return;mode=b.dataset.k;SFX.menu();refreshMenu()});
-$('#floors').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;shapes=b.dataset.v==='true';SFX.menu();refreshMenu()});
+$('#mixBox').onchange=e=>{mix=e.target.checked;if(mix&&!sel.size&&mode!=='classic')sel.add(mode);SFX.menu();renderModes()};
+$('#modes').addEventListener('click',e=>{const b=e.target.closest('.mode');if(!b)return;
+  const k=b.dataset.k;if(mix){sel.has(k)?sel.delete(k):sel.add(k)}else mode=k;SFX.menu();refreshMenu()});
+$('#floors').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;floor=b.dataset.k;SFX.menu();refreshMenu()});
 $('#levels').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;level=b.dataset.k;SFX.menu();refreshMenu()});
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id))}
 function showMenu(){SFX.menu();clearInterval(timer);$('#overlay').classList.remove('show');show('menu')}
 function play(){
-  try{localStorage.setItem('ms-mode',mode);localStorage.setItem('ms-level',level);localStorage.setItem('ms-shape',shapes?'1':'0')}catch(e){}
+  try{localStorage.setItem('ms-mode',mode);localStorage.setItem('ms-level',level);localStorage.setItem('ms-floor',floor);
+    localStorage.setItem('ms-mix',mix?'1':'0');localStorage.setItem('ms-sel',JSON.stringify([...sel]))}catch(e){}
+  cur=A();shapes=isPoly(floor);
   SFX.start();show('game');init();
 }
 $('#play').onclick=play;$('#menuBtn').onclick=showMenu;$('#toMenu').onclick=showMenu;
 
+/* ---------- tutoriais ---------- */
+let tutTimer=0;
+function paintToken(e,tok){
+  const suf=tok.match(/((?:[*^>]|:a|:b)*)$/)[1];tok=tok.slice(0,tok.length-suf.length);
+  const cls=['cell'];let html='';
+  if(tok===''||tok==='.'){}
+  else if(tok==='_')cls.push('open');
+  else if(/^-?\d+$/.test(tok)){const v=+tok;cls.push('open','n'+(v===0?0:((Math.abs(v)-1)%8)+1));if(v<0)cls.push('neg');html=tok}
+  else if(/^F+$/.test(tok)){cls.push('flagged');html=stackHTML('🚩',tok.length,' flag')}
+  else if(/^N+$/.test(tok)){cls.push('negflag');html=stackHTML('🚩',tok.length,' flag neg')}
+  else if(/^B+$/.test(tok)){cls.push('open','mine');html=stackHTML('💣',tok.length,'')}
+  else if(/^X+$/.test(tok)){cls.push('open','mine','negmine');html=stackHTML('💣',tok.length,'')}
+  else if(tok[0]==='~'){const t=tok.slice(1);html=t;cls.push('open','hint',t[0]==='Σ'?'n6':t[0]==='≥'?'hge':t[0]==='≤'?'hle':'hp');if(t.length>=3)cls.push('long')}
+  if(suf.includes('*'))cls.push('hl');
+  if(suf.includes(':a'))cls.push('op0');if(suf.includes(':b'))cls.push('op1');
+  if(suf.includes('^'))html+='<i class="scanring"></i>';
+  if(suf.includes('>'))html+='<i class="ptr">👆</i>';
+  const cn=cls.join(' ');if(e.className!==cn)e.className=cn;
+  if(e._h!==html){e.innerHTML=html;e._h=html}
+}
+function runGridDemo(box,frames){
+  const g=document.createElement('div');g.className='dgrid';g.style.gridTemplateColumns='repeat(5,var(--cell))';
+  const els=[];for(let i=0;i<15;i++){const c=document.createElement('div');c.className='cell';g.appendChild(c);els.push(c)}
+  const cap=document.createElement('div');cap.className='dcap';
+  box.append(g,cap);let f=0;
+  (function step(){
+    const fm=frames[f];fm.cells.forEach((t,i)=>paintToken(els[i],t));
+    cap.textContent=fm.cap;f=(f+1)%frames.length;tutTimer=setTimeout(step,fm.ms||2400);
+  })();
+}
+function floorGeom(kind){
+  if(kind==='irr')return voronoi(6,5,32);
+  if(kind==='tri')return triangles(6,5,32);
+  const cols=6,rows=5,s=32,g=3,polys=[],adjL=[];
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    polys.push([{x:c*s+g/2,y:r*s+g/2},{x:(c+1)*s-g/2,y:r*s+g/2},{x:(c+1)*s-g/2,y:(r+1)*s-g/2},{x:c*s+g/2,y:(r+1)*s-g/2}]);
+    const a=[];
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+      if(!dx&&!dy)continue;let x=c+dx,y=r+dy;
+      if(kind==='torus'){x=(x+cols)%cols;y=(y+rows)%rows}else if(x<0||y<0||x>=cols||y>=rows)continue;
+      a.push(y*cols+x);
+    }
+    adjL.push(a);
+  }
+  return{polys,adj:adjL,W:cols*s,H:rows*s};
+}
+function runFloorDemo(box,kind){
+  const G=floorGeom(kind),cols=6,rows=5;
+  const svg=document.createElement('div');svg.className='dsvgw'+(kind==='torus'?' torus':'');
+  svg.innerHTML=`<svg viewBox="0 0 ${G.W} ${G.H}" class="dsvg">`+
+    G.polys.map(p=>`<polygon points="${p.map(v=>v.x.toFixed(1)+','+v.y.toFixed(1)).join(' ')}"/>`).join('')+'</svg>';
+  const cap=document.createElement('div');cap.className='dcap';box.append(svg,cap);
+  const polys=[...svg.querySelectorAll('polygon')];
+  let focus;
+  if(kind==='square')focus=[2*cols+3];
+  else if(kind==='torus')focus=[0,cols*rows-1,cols-1,(rows-1)*cols];
+  else{ // casas mais próximas do centro, com o maior número de vizinhas
+    const cx=G.W/2,cy=G.H/2;
+    focus=G.polys.map((p,i)=>({i,d:Math.hypot(p.reduce((s,v)=>s+v.x,0)/p.length-cx,p.reduce((s,v)=>s+v.y,0)/p.length-cy)}))
+      .sort((a,b)=>a.d-b.d).slice(0,5).map(o=>o.i);
+  }
+  let f=0;
+  (function step(){
+    polys.forEach(p=>p.removeAttribute('class'));
+    const i=focus[f%focus.length];polys[i].setAttribute('class','sel');
+    G.adj[i].forEach(j=>polys[j].setAttribute('class','nb'));
+    cap.textContent=FLOORS[kind].cap(G.adj[i].length);
+    f++;tutTimer=setTimeout(step,2300);
+  })();
+}
+function openTut(id){
+  const t=TUTS[id];if(!t)return;clearTimeout(tutTimer);SFX.menu();
+  $('#tutT').textContent=t.title;
+  $('#tutL').innerHTML=t.rules.map(r=>`<li>${r}</li>`).join('');
+  const box=$('#tutDemo');box.innerHTML='';
+  if(t.floor)runFloorDemo(box,t.floor);else runGridDemo(box,t.frames);
+  $('#tut').classList.add('show');
+}
+function closeTut(){clearTimeout(tutTimer);$('#tut').classList.remove('show')}
+document.addEventListener('click',e=>{const q=e.target.closest('.qm');if(!q)return;e.stopPropagation();e.preventDefault();openTut(q.dataset.tut)},true);
+$('#tutOk').onclick=closeTut;$('#tutX').onclick=closeTut;
+$('#tut').addEventListener('click',e=>{if(e.target.id==='tut')closeTut()});
+addEventListener('keydown',e=>{if(e.key==='Escape')closeTut()});
+
 /* ---------- jogo ---------- */
-const bestKey=()=>`ms-best-${mode}-${level}`+(shapes?'-irr':'');
-function showBest(){let b=null;try{b=localStorage.getItem(bestKey())}catch(e){}$('#best').textContent=b?b+'s':'—'}
+const bestKey=()=>`ms-best-${[...cur].sort().join('+')}-${level}-${floor}`;
+function showBest(){let b=null;if(!has('duel')){try{b=localStorage.getItem(bestKey())}catch(e){}}$('#best').textContent=b?b+'s':'—'}
 const setCounter=()=>{$('#mines').textContent=fmt(NET-fsum)};
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2200)}
 
 function init(){
-  const LV=LEVELS[level];C=LV.c;R=LV.r;M=bombsFor(mode,level);plan=makePlan();NET=plan.reduce((a,b)=>a+b,0);
-  clearInterval(timer);secs=0;started=false;over=false;fsum=0;opened=0;
+  const LV=LEVELS[level];C=LV.c;R=LV.r;M=bombsFor(level,cur);plan=makePlan();NET=plan.reduce((a,b)=>a+b,0);
+  clearInterval(timer);secs=0;started=false;over=false;fsum=0;opened=0;pendingWin=false;
+  turn=0;scores=[0,0];radar=[RADAR[level],RADAR[level]];radarOn=false;
   $('#time').textContent='000';setCounter();faceEl.textContent='🙂';
-  $('#tag').textContent=`${MODES[mode].icon} ${MODES[mode].name} · ${LV.name}`+(shapes?' · ⬢':'');
-  $('#help').textContent=MODES[mode].help;
-  boardEl.className=shapes?'shapes':'';boardEl.innerHTML='';boardEl.style.cssText='';
+  const names=[...cur].filter(k=>k!=='classic'||cur.size===1);
+  $('#tag').textContent=`${names.map(k=>MODES[k].icon).join('')} ${LV.emoji} ${LV.name} · ${FLOORS[floor].icon}`;
+  const helps=[...new Set(['classic',...cur])].map(k=>MODES[k].help);
+  if(floor==='torus')helps.push('As bordas se conectam (donut)');
+  $('#help').textContent=helps.join(' · ');
+  $('#game').classList.toggle('duel',has('duel'));
+  $('#duel').hidden=!has('duel');$('#radarBtn').hidden=!has('detector');
+  updateDuel();updateRadar();
+  boardEl.className=(shapes?'shapes ':'')+floor;boardEl.innerHTML='';boardEl.style.cssText='';
   const w=Math.min(36,Math.floor((Math.min(innerWidth-90,1100))/C)-3);
   const s=Math.max(24,w);
   document.documentElement.style.setProperty('--cell',s+'px');
   grid=[];cells=[];
-  if(shapes)buildShapes(s);
+  if(shapes){const G=floor==='irr'?voronoi(LV.c,LV.r,s):triangles(LV.c,LV.r,s);mountPolys(G,s)}
   else{
     boardEl.style.gridTemplateColumns=`repeat(${C},var(--cell))`;
     for(let y=0;y<R;y++){grid.push([]);for(let x=0;x<C;x++){
@@ -337,7 +618,7 @@ function init(){
   }
   showBest();
 }
-/* piso de formas irregulares: diagrama de Voronoi com pontos sorteados */
+/* piso irregular: diagrama de Voronoi com pontos sorteados */
 function clip(poly,nx,ny,c,tag){
   const out=[],n=poly.length;
   for(let i=0;i<n;i++){
@@ -348,9 +629,8 @@ function clip(poly,nx,ny,c,tag){
   }
   return out;
 }
-function buildShapes(s){
-  const {c:gc,r:gr}=LEVELS[level],W=gc*s,H=gr*s,g=Math.max(3,s*.09);
-  const raw=[];
+function voronoi(gc,gr,s){
+  const W=gc*s,H=gr*s,g=Math.max(3,s*.09),raw=[];
   for(let j=0;j<gr;j++)for(let i=0;i<gc;i++)raw.push([(i+.5+(Math.random()-.5)*.84)*s,(j+.5+(Math.random()-.5)*.84)*s]);
   const sets=raw.map(()=>new Set()),polys=[];
   raw.forEach((p,k)=>{
@@ -365,8 +645,27 @@ function buildShapes(s){
     poly.forEach((v,i)=>{const w=poly[(i+1)%poly.length];
       if(v.t>=0&&Math.hypot(w.x-v.x,w.y-v.y)>2){sets[k].add(v.t);sets[v.t].add(k)}});
   });
-  adj=sets.map(a=>[...a]);pts=[];grid=[[]];
-  polys.forEach((poly,k)=>{
+  return{polys,adj:sets.map(a=>[...a]),W,H};
+}
+/* piso triangular: triângulos equiláteros; vizinhos = quem divide ao menos um vértice (12) */
+function triangles(gc,gr,s){
+  const a=s*1.52,half=a/2,h=a*.866,g=Math.max(3,s*.09);
+  const tc=Math.max(4,Math.floor(2*gc*s/a)-1),rows=Math.max(3,Math.floor(gr*s/h));
+  const ri=a/(2*Math.sqrt(3)),f=(ri-g/2)/ri;
+  const polys=[],vmap=new Map();
+  for(let r=0;r<rows;r++)for(let c=0;c<tc;c++){
+    const up=(r+c)%2===0,v=up?[[c,r+1],[c+2,r+1],[c+1,r]]:[[c,r],[c+2,r],[c+1,r+1]],k=polys.length;
+    v.forEach(([i,j])=>{const key=i+','+j;if(!vmap.has(key))vmap.set(key,[]);vmap.get(key).push(k)});
+    const p=v.map(([i,j])=>({x:i*half,y:j*h})),cx=(p[0].x+p[1].x+p[2].x)/3,cy=(p[0].y+p[1].y+p[2].y)/3;
+    polys.push(p.map(q=>({x:cx+(q.x-cx)*f,y:cy+(q.y-cy)*f})));
+  }
+  const sets=polys.map(()=>new Set());
+  vmap.forEach(l=>l.forEach(a=>l.forEach(b=>{if(a!==b)sets[a].add(b)})));
+  return{polys,adj:sets.map(x=>[...x]),W:(tc+1)*half,H:rows*h};
+}
+function mountPolys(G,s){
+  adj=G.adj;pts=[];grid=[[]];
+  G.polys.forEach((poly,k)=>{
     let A=0,cx=0,cy=0;
     poly.forEach((a,i)=>{const b=poly[(i+1)%poly.length],f=a.x*b.y-b.x*a.y;A+=f;cx+=(a.x+b.x)*f;cy+=(a.y+b.y)*f});
     A/=2;cx/=6*A;cy/=6*A;
@@ -380,23 +679,33 @@ function buildShapes(s){
     grid[0].push({m:0,o:false,f:0,n:0,a:0});
     setupCell(el,k,0);boardEl.appendChild(el);cells.push(el);
   });
-  boardEl.style.width=W+'px';boardEl.style.height=H+'px';
-  C=polys.length;R=1;
+  boardEl.style.width=G.W+'px';boardEl.style.height=G.H+'px';
+  C=G.polys.length;R=1;
 }
 const pos=(i,j)=>shapes?pts[i]:[i,j];
 const dist=(a,b)=>{const p=pos(a[0],a[1]),q=pos(b[0],b[1]);return Math.hypot(p[0]-q[0],p[1]-q[1])};
 function setupCell(el,x,y){
   let pressTimer,long=false;
   el.addEventListener('click',()=>{ if(long){long=false;return}
-    flagMode&&!grid[y][x].o ? toggleFlag(x,y) : reveal(x,y)});
+    if(radarOn)return scan(x,y);
+    flagMode&&!grid[y][x].o ? toggleFlag(x,y) : move(x,y)});
   el.addEventListener('contextmenu',e=>{e.preventDefault();if(!touching)toggleFlag(x,y)});
   el.addEventListener('touchstart',()=>{touching=true;long=false;
     pressTimer=setTimeout(()=>{long=true;toggleFlag(x,y);navigator.vibrate&&navigator.vibrate(30)},380)},{passive:true});
   ['touchend','touchmove','touchcancel'].forEach(t=>el.addEventListener(t,()=>{clearTimeout(pressTimer);setTimeout(()=>touching=false,700)},{passive:true}));
 }
 const el=(x,y)=>cells[y*C+x];
-function neighbors(x,y){if(shapes)return adj[x].map(j=>[j,0]);const a=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
-  if(!dx&&!dy)continue;const nx=x+dx,ny=y+dy;if(nx>=0&&ny>=0&&nx<C&&ny<R)a.push([nx,ny])}return a}
+function neighbors(x,y){
+  if(shapes)return adj[x].map(j=>[j,0]);
+  const a=[];
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    if(!dx&&!dy)continue;let nx=x+dx,ny=y+dy;
+    if(floor==='torus'){nx=(nx+C)%C;ny=(ny+R)%R}
+    else if(nx<0||ny<0||nx>=C||ny>=R)continue;
+    a.push([nx,ny]);
+  }
+  return a;
+}
 
 function place(sx,sy){
   const safe=new Set([sy*C+sx,...neighbors(sx,sy).map(([x,y])=>y*C+x)]);
@@ -405,15 +714,35 @@ function place(sx,sy){
   free.sort(()=>Math.random()-.5);
   plan.forEach((v,i)=>{const k=free[i];grid[k/C|0][k%C].m=v});
   for(let y=0;y<R;y++)for(let x=0;x<C;x++){
-    const nb=neighbors(x,y);
-    grid[y][x].n=nb.reduce((s,[a,b])=>s+grid[b][a].m,0);
-    grid[y][x].a=nb.filter(([a,b])=>grid[b][a].m!==0).length;
+    const nb=neighbors(x,y),g=grid[y][x];
+    g.n=nb.reduce((s,[a,b])=>s+grid[b][a].m,0);
+    g.a=nb.filter(([a,b])=>grid[b][a].m!==0).length;
+    g.dn=g.n;g.liar=false;g.h=null;
   }
+  prepareDisplay();
+}
+/* números mentirosos e dicas parciais (valores mostrados ≠ valores reais) */
+function prepareDisplay(){
+  const all=grid.flat();
+  if(has('liar')){
+    const cand=all.filter(g=>g.a>0&&g.m===0).sort(()=>Math.random()-.5);
+    cand.slice(0,LIARS[level]).forEach(g=>{
+      let d=Math.random()<.5?1:-1;if(!has('negative')&&g.n+d<1)d=1;
+      g.dn=g.n+d;g.liar=true;
+    });
+  }
+  if(has('partial'))all.forEach(g=>{
+    if(g.a===0)return;const v=g.dn,t=Math.random(),r=Math.random()<.5?0:1;
+    if(t<.34||(t<.67&&v-r<1&&!has('negative')))g.h={k:'p',txt:(((v%2)+2)%2===0?'par':'ímp')};
+    else if(t<.67)g.h={k:'ge',txt:'≥'+(v-r)};
+    else g.h={k:'le',txt:'≤'+(v+r)};
+  });
 }
 function startTimer(){timer=setInterval(()=>{secs++;$('#time').textContent=String(secs).padStart(3,'0')},1000)}
 
 function nextFlag(f){
-  const seq={classic:[0,1],negative:[0,1,-1],multi:[0,1,2,3],chaos:[0,1,2,3,-1,-2,-3]}[mode];
+  const n=has('negative'),m=has('multi');
+  const seq=m?(n?[0,1,2,3,-1,-2,-3]:[0,1,2,3]):(n?[0,1,-1]:[0,1]);
   return seq[(seq.indexOf(f)+1)%seq.length];
 }
 function renderFlag(x,y){
@@ -428,17 +757,27 @@ function stackHTML(ch,n,cls){ // n emojis desenhados, um por bandeira/bomba
 }
 function toggleFlag(x,y){
   if(over)return;const g=grid[y][x];if(g.o)return;
-  const nf=nextFlag(g.f);fsum+=nf-g.f;g.f=nf;renderFlag(x,y);setCounter();SFX.flag(nf);
+  const nf=nextFlag(g.f);fsum+=nf-g.f;g.f=nf;g.fo=turn;renderFlag(x,y);setCounter();SFX.flag(nf);
+}
+/* jogada do jogador: abre casa/vizinhos; no duelo pontua e passa a vez */
+function move(x,y){
+  if(over)return;const before=opened;
+  reveal(x,y);
+  if(over)return;
+  const gain=opened-before;
+  if(has('duel')&&gain>0){scores[turn]+=gain;updateDuel()}
+  if(pendingWin){pendingWin=false;return win()}
+  if(has('duel')&&gain>0)passTurn();
 }
 function reveal(x,y){
   if(over)return;const g=grid[y][x];
   if(g.f!==0)return;
-  if(g.o){ // abrir vizinhos (chord)
-    if(!g.a)return;
+  if(g.o){ // abrir vizinhos (chord) — usa o número mostrado
+    if(!g.a||has('partial'))return;
     const nb=neighbors(x,y);
     const fl=nb.filter(([a,b])=>grid[b][a].f!==0).length;
     const sum=nb.reduce((s,[a,b])=>s+grid[b][a].f,0);
-    if(fl>0&&sum===g.n){SFX.chord();nb.forEach(([a,b])=>{if(grid[b][a].f===0&&!grid[b][a].o)reveal(a,b)})}
+    if(fl>0&&sum===g.dn){SFX.chord();nb.forEach(([a,b])=>{if(grid[b][a].f===0&&!grid[b][a].o)reveal(a,b)})}
     return;
   }
   if(!started){started=true;place(x,y);startTimer()}
@@ -450,7 +789,7 @@ function reveal(x,y){
       if(!t.o&&t.f===0&&t.m===0){t.o=true;q.push([a,b,d+1])}}
   }
   [...depths].sort((a,b)=>a-b).slice(0,16).forEach(d=>setTimeout(()=>SFX.open(d),d*35));
-  if(opened===C*R-countMineCells())win();
+  if(opened===C*R-countMineCells())pendingWin=true;
 }
 function countMineCells(){let k=0;for(const row of grid)for(const g of row)if(g.m!==0)k++;return k}
 function openCell(x,y,d){
@@ -458,16 +797,20 @@ function openCell(x,y,d){
   e.innerHTML='';e.classList.remove('flagged','negflag','spawn');e.classList.add('open');
   e.style.animationDelay=(d*35)+'ms';
   if(g.a>0){
-    const t=String(g.n);e.textContent=t;
-    e.classList.add('n'+(g.n===0?0:((Math.abs(g.n)-1)%8)+1));
-    if(g.n<0)e.classList.add('neg');
-    if(t.length>=3)e.classList.add('long');
+    let t;
+    if(g.h){t=g.h.txt;e.classList.add('hint','h'+g.h.k)}
+    else{t=String(g.dn);e.classList.add('n'+(g.dn===0?0:((Math.abs(g.dn)-1)%8)+1));if(g.dn<0)e.classList.add('neg')}
+    e.textContent=t;if(t.length>=3)e.classList.add('long');
   }
+  if(has('duel'))e.classList.add('op'+turn);
 }
 function mineHTML(m){return stackHTML('💣',Math.abs(m),'')}
+function revealLiars(){
+  grid.flat().forEach((g,i)=>{if(g.liar&&g.o){const e=cells[i];e.classList.add('liar');e.insertAdjacentHTML('beforeend','<i class="badge">🤥</i>')}});
+}
 function lose(x,y){
-  over=true;clearInterval(timer);faceEl.textContent='😵';
-  const mines=[];
+  over=true;clearInterval(timer);faceEl.textContent='😵';setRadarOn(false);
+  const loser=turn,mines=[];
   for(let j=0;j<R;j++)for(let i=0;i<C;i++){const g=grid[j][i];
     if(g.m!==0&&g.f!==g.m)mines.push([i,j]);
     else if(g.m===0&&g.f!==0)el(i,j).classList.add('wrong');}
@@ -481,21 +824,73 @@ function lose(x,y){
     if(i===x&&j===y){e.classList.add('boom');boardEl.classList.add('shake');burst(e,40,['#ef4444','#f97316','#fde047']);SFX.boom()}
     else if(k%4===0){burst(e,10,m<0?['#38bdf8','#818cf8']:['#ef4444','#f97316']);SFX.pop(k)}
   },k*step));
-  setTimeout(()=>modal('💥','Boom!','Você pisou numa mina. Tente de novo!'),mines.length*step+700);
+  revealLiars();
+  setTimeout(()=>{
+    if(has('duel'))modal('💥',`${PN[loser]} explodiu!`,`${PN[1-loser]} vence! Placar: 🔵 ${scores[0]} × ${scores[1]} 🟠`);
+    else modal('💥','Boom!','Você pisou numa mina. Tente de novo!');
+  },mines.length*step+700);
 }
 function win(){
-  over=true;clearInterval(timer);faceEl.textContent='😎';
+  over=true;clearInterval(timer);faceEl.textContent='😎';setRadarOn(false);
+  if(has('duel')){ // bônus de bandeiras: certa +2, errada −2
+    grid.flat().forEach(g=>{if(g.f!==0)scores[g.fo||0]+=(g.f===g.m?2:-2)});updateDuel();
+  }
   for(let j=0;j<R;j++)for(let i=0;i<C;i++){const g=grid[j][i];
     if(g.m!==0&&g.f!==g.m){g.f=g.m;renderFlag(i,j)}}
-  fsum=NET;setCounter();
+  fsum=NET;setCounter();revealLiars();
   cells.forEach((e,k)=>{const q=pos(k%C,k/C|0);e.style.animationDelay=((q[0]+q[1])*40)+'ms'});
   boardEl.classList.add('win');
-  let rec='';try{const b=+localStorage.getItem(bestKey());
-    if(!b||secs<b){localStorage.setItem(bestKey(),secs);rec=' 🏆 Novo recorde!'}}catch(e){}
+  let rec='';
+  if(!has('duel')){try{const b=+localStorage.getItem(bestKey());
+    if(!b||secs<b){localStorage.setItem(bestKey(),secs);rec=' 🏆 Novo recorde!'}}catch(e){}}
   showBest();confetti();SFX.win();
-  setTimeout(()=>modal('🎉','Você venceu!',`Tempo: ${secs}s.${rec}`),1200);
+  setTimeout(()=>{
+    if(has('duel')){
+      const [a,b]=scores;
+      modal('🏆',a===b?'Empate!':`${PN[a>b?0:1]} vence!`,`Campo limpo! Placar final (com bandeiras): 🔵 ${a} × ${b} 🟠`);
+    }else modal('🎉','Você venceu!',`Tempo: ${secs}s.${rec}`);
+  },1200);
 }
 function modal(e,t,p){$('#mEmoji').textContent=e;$('#mTitle').textContent=t;$('#mText').textContent=p;$('#overlay').classList.add('show')}
+
+/* ---------- duelo ---------- */
+function updateDuel(){
+  $('#sc0').textContent=scores[0];$('#sc1').textContent=scores[1];
+  $('#p0').classList.toggle('on',turn===0);$('#p1').classList.toggle('on',turn===1);
+  $('#game').dataset.turn=turn;updateRadar();
+}
+function passTurn(){turn=1-turn;setRadarOn(false);updateDuel();SFX.turn()}
+
+/* ---------- detector (radar) ---------- */
+function updateRadar(){
+  const b=$('#radarBtn');b.innerHTML=`📡 Radar (<b>${radar[turn]}</b>)`;
+  b.classList.toggle('on',radarOn);b.disabled=radar[turn]<=0&&!radarOn;
+}
+function setRadarOn(v){radarOn=v;boardEl.classList.toggle('radar',v);updateRadar()}
+$('#radarBtn').onclick=()=>{
+  if(over)return;
+  if(!radarOn&&radar[turn]<=0)return;
+  if(!radarOn&&!started){toast('Abra uma casa antes de usar o radar');return}
+  SFX.click();setRadarOn(!radarOn);
+};
+function scan(x,y){
+  if(over)return;
+  if(!started){setRadarOn(false);toast('Abra uma casa antes de usar o radar');return}
+  if(radar[turn]<=0)return;
+  radar[turn]--;
+  const seen=new Map([[y*C+x,0]]),q=[[x,y]];
+  while(q.length){const [cx,cy]=q.shift(),d=seen.get(cy*C+cx);if(d>=2)continue;
+    for(const [a,b] of neighbors(cx,cy)){const k=b*C+a;if(!seen.has(k)){seen.set(k,d+1);q.push([a,b])}}}
+  let sum=0;
+  seen.forEach((d,k)=>{sum+=grid[k/C|0][k%C].m;
+    const e=cells[k];e.style.setProperty('--sd',(d*130)+'ms');e.classList.add('scan');setTimeout(()=>e.classList.remove('scan'),1300)});
+  const c=cells[y*C+x],m=document.createElement('div');
+  m.className='rmark'+(sum<0?' neg':'');m.textContent='📡 '+(sum>0?'+':'')+sum;
+  m.style.left=(c.offsetLeft+c.offsetWidth/2)+'px';m.style.top=(c.offsetTop+c.offsetHeight/2)+'px';
+  boardEl.appendChild(m);
+  SFX.radar();setRadarOn(false);
+  if(has('duel'))passTurn();
+}
 
 /* ---------- partículas ---------- */
 const cv=$('#fx'),ctx=cv.getContext('2d');let parts=[],raf=0;
@@ -519,7 +914,7 @@ function restart(){SFX.click();$('#overlay').classList.remove('show');init()}
 faceEl.onclick=restart;$('#again').onclick=restart;
 $('#flagMode').onclick=e=>{flagMode=!flagMode;e.currentTarget.classList.toggle('on',flagMode)};
 addEventListener('keydown',e=>{if((e.key==='r'||e.key==='R')&&$('#game').classList.contains('active'))restart()});
-buildMenu();
+renderModes();
 </script>
 </body>
 </html>
