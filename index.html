@@ -14,18 +14,19 @@
     --cell:36px;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;margin:0}
+  html{min-height:100%}
+  body{margin:0;min-height:100vh}
   body{
     font-family:var(--ui);color:var(--text);font-size:16px;
     background:radial-gradient(ellipse 90% 60% at 50% -8%,#0c3a55 0%,transparent 62%),linear-gradient(#050b17,#02060e);
     background-attachment:fixed;
-    display:flex;align-items:center;justify-content:center;padding:16px;overflow-x:hidden;user-select:none;
+    display:flex;padding:40px 16px;overflow-x:hidden;user-select:none;
   }
   button{font-family:inherit;color:inherit}
   .bub{position:fixed;bottom:-20px;background:#8fe8f5;opacity:.25;z-index:0;pointer-events:none;animation:rise linear infinite}
   @keyframes rise{0%{transform:translate(0,0)}50%{transform:translate(14px,-55vh)}100%{transform:translate(-8px,-115vh);opacity:0}}
 
-  .screen{display:none;position:relative;z-index:1;max-width:100%;
+  .screen{display:none;position:relative;z-index:1;max-width:100%;margin:auto;
     background:#08101fe6;border:2px solid var(--line);border-radius:3px;padding:22px;
     box-shadow:0 0 0 2px #000,0 0 40px #4fd8e814}
   .screen.active{display:block;animation:appIn .45s steps(8)}
