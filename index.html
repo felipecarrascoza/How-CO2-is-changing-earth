@@ -40,9 +40,9 @@
   @keyframes glitch{0%,92%,100%{text-shadow:-3px 0 var(--pink),3px 0 var(--cyan);transform:none}
     94%{text-shadow:-6px 0 var(--pink),6px 0 var(--cyan);transform:translateX(2px)}
     96%{text-shadow:5px 0 var(--pink),-5px 0 var(--cyan);transform:translateX(-2px)}}
-  #menu .tagline{display:inline-block;font-family:var(--pix);font-size:15px;letter-spacing:6px;color:#2a0618;background:var(--pink);padding:7px 8px 7px 14px;margin:0 0 12px;
-    transform:rotate(-2deg);box-shadow:4px 4px 0 #a02a56,0 0 24px #ff5c9355;animation:upd 1.6s steps(2) infinite}
-  @keyframes upd{50%{filter:brightness(1.25);transform:rotate(-2deg) translateY(-2px)}}
+  #menu .tagline{display:inline-block;font-family:var(--pix);font-size:22px;line-height:1;letter-spacing:8px;color:#2a0618;background:var(--pink);padding:11px 6px 11px 16px;margin:2px 0 16px;
+    box-shadow:5px 5px 0 #a02a56,0 0 26px #ff5c9366;animation:upd 1.4s steps(2) infinite}
+  @keyframes upd{50%{filter:brightness(1.3)}}
   #menu .sub{color:var(--muted);margin:0 0 14px;font-size:14px;letter-spacing:1px}
   .label{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin:20px 0 10px;display:flex;align-items:center;gap:12px}
   .label::before,.label::after{content:"";flex:1;height:2px;background:var(--line)}
@@ -75,6 +75,36 @@
   .play:hover{background:#12305a;box-shadow:0 0 30px #4fd8e855;color:#fff}
   .play:active{transform:translateY(2px)}
 
+  /* dificuldades: cada uma tem sua cor e, quanto mais difícil, mais radical o efeito ao passar o mouse */
+  .lvl.diff .px{width:24px;height:24px;vertical-align:-7px;margin-right:6px}
+  .lvl.diff{transition:border-color .2s,background .2s,color .2s,box-shadow .2s}
+  .lvl.d-easy.sel{border-color:#53e69a;background:#0e2e24;box-shadow:0 0 0 1px #53e69a,0 0 18px #53e69a33}
+  .lvl.d-medium.sel{border-color:#ffd166;background:#33290e;box-shadow:0 0 0 1px #ffd166,0 0 18px #ffd16633}
+  .lvl.d-hard.sel{border-color:#c58bff;background:#25103f;box-shadow:0 0 0 1px #c58bff,0 0 18px #c58bff44}
+  .lvl.d-insane.sel{border-color:#ff4d5e;background:#3a0a12;box-shadow:0 0 0 1px #ff4d5e,0 0 22px #ff4d5e66}
+  /* easy: verde, pulinho suave */
+  .lvl.d-easy:hover{border-color:#53e69a;background:#0f3a2b;color:#c9ffe3;box-shadow:0 0 18px #53e69a55;animation:dEasy .8s ease-in-out infinite}
+  .lvl.d-easy:hover .px{animation:eBounce .6s ease-in-out infinite}
+  @keyframes dEasy{50%{transform:translateY(-4px)}}
+  @keyframes eBounce{50%{transform:translateY(-4px) scale(1.15)}}
+  /* medium: amarelo, balança */
+  .lvl.d-medium:hover{border-color:#ffd166;background:#3a2f0f;color:#fff0c2;box-shadow:0 0 20px #ffd16666;animation:dMed .5s ease-in-out infinite}
+  .lvl.d-medium:hover .px{animation:eWobble .4s ease-in-out infinite}
+  @keyframes dMed{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg) translateY(-2px)}}
+  @keyframes eWobble{0%,100%{transform:rotate(-14deg) scale(1.1)}50%{transform:rotate(14deg) scale(1.1)}}
+  /* hard: roxo, treme com glitch RGB */
+  .lvl.d-hard:hover{border-color:#c58bff;background:#2a1248;color:#f0dcff;box-shadow:0 0 26px #c58bff88,inset 0 0 14px #c58bff44;animation:dHard .22s steps(2) infinite;text-shadow:-2px 0 #ff5c93,2px 0 #4fd8e8}
+  .lvl.d-hard:hover .px{animation:eGlitch .3s steps(2) infinite}
+  @keyframes dHard{0%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(2px,-1px)}75%{transform:translate(-1px,-2px)}100%{transform:translate(1px,2px)}}
+  @keyframes eGlitch{0%{transform:translate(0,0) scale(1.25);filter:drop-shadow(-3px 0 #ff5c93) drop-shadow(3px 0 #4fd8e8)}50%{transform:translate(2px,-2px) scale(1.35) rotate(-6deg);filter:drop-shadow(3px 0 #ff5c93) drop-shadow(-3px 0 #4fd8e8) hue-rotate(40deg)}100%{transform:translate(-2px,2px) scale(1.25);filter:drop-shadow(-3px 0 #ff5c93) drop-shadow(3px 0 #4fd8e8)}}
+  /* insane: vermelho/fogo, tremor violento, caveira girando, fundo em chamas */
+  .lvl.d-insane:hover{border-color:#ff4d5e;color:#fff;box-shadow:0 0 34px #ff4d5eaa,0 0 0 2px #000,inset 0 0 18px #ff4d5e88;text-shadow:-3px 0 #ff5c93,3px 0 #4fd8e8;
+    background:repeating-linear-gradient(135deg,#3a0a12 0 8px,#8a1424 8px 16px);background-size:46px 46px;animation:dInsane .12s steps(2) infinite,fire .5s linear infinite}
+  .lvl.d-insane:hover .px{animation:eSkull .5s steps(8) infinite}
+  .lvl.d-insane:hover small{color:#ffd3d6}
+  @keyframes dInsane{0%{transform:translate(-4px,2px) rotate(-1.2deg)}25%{transform:translate(4px,-3px) rotate(1.2deg) scale(1.04)}50%{transform:translate(-5px,-2px) rotate(-1.6deg)}75%{transform:translate(5px,3px) rotate(1.6deg) scale(1.04)}100%{transform:translate(-3px,-3px) rotate(-1deg)}}
+  @keyframes fire{to{background-position:46px 0}}
+  @keyframes eSkull{0%{transform:rotate(0) scale(1.5);filter:drop-shadow(-4px 0 #ff5c93) drop-shadow(4px 0 #4fd8e8)}50%{transform:rotate(180deg) scale(1.8);filter:drop-shadow(4px 0 #ff5c93) drop-shadow(-4px 0 #4fd8e8) brightness(1.6)}100%{transform:rotate(360deg) scale(1.5);filter:drop-shadow(-4px 0 #ff5c93) drop-shadow(4px 0 #4fd8e8)}}
   .qm{width:22px;height:22px;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--pix);font-size:10px;line-height:1;
     background:#0b1d36;border:2px solid var(--line);color:var(--cyan);cursor:help;transition:.15s;flex:none}
   .qm:hover{background:var(--cyan);color:#04111f;border-color:var(--cyan)}
@@ -438,9 +468,9 @@ const STR={
 const tr=(k,...a)=>{const v=STR[lang][k];return typeof v==='function'?v(...a):v};
 
 const LEVELS_SRC={
-  easy:{c:9,r:9,m:10,name:X('Easy','Fácil'),emoji:'🌱'},
-  medium:{c:16,r:16,m:40,name:X('Medium','Médio'),emoji:'⚡'},
-  hard:{c:30,r:16,m:99,name:X('Hard','Difícil'),emoji:'🔥'},
+  easy:{c:9,r:9,m:10,name:X('Easy','Fácil'),emoji:'🙂'},
+  medium:{c:16,r:16,m:40,name:X('Medium','Médio'),emoji:'😐'},
+  hard:{c:30,r:16,m:99,name:X('Hard','Difícil'),emoji:'😈'},
   insane:{c:36,r:22,m:180,name:X('Super hard','Super difícil'),emoji:'💀'}
 };
 const RADAR={easy:3,medium:5,hard:8,insane:12};
@@ -652,7 +682,7 @@ function refreshMenu(){
     `<button class="lvl${k===floor?' sel':''}" data-k="${k}">${f.icon} ${f.name}<span class="qm" data-tut="floor-${k}" title="${tr('tHow')}">?</span></button>`).join('');
   const multi=A().has('multi');
   $('#levels').innerHTML=Object.entries(LEVELS).map(([k,l])=>
-    `<button class="lvl${k===level?' sel':''}" data-k="${k}">${l.emoji} ${l.name}<small>${l.c}×${l.r} · ${bombsFor(k)} ${multi?tr('bombs'):tr('mines')}</small></button>`).join('');
+    `<button class="lvl diff d-${k}${k===level?' sel':''}" data-k="${k}">${l.emoji} ${l.name}<small>${l.c}×${l.r} · ${bombsFor(k)} ${multi?tr('bombs'):tr('mines')}</small></button>`).join('');
 }
 $('#modes').addEventListener('click',e=>{const b=e.target.closest('.mode');if(!b)return;
   const k=b.dataset.k;
