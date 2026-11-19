@@ -152,11 +152,15 @@
     background:linear-gradient(135deg,var(--accent),#6366f1);box-shadow:0 8px 24px #8b5cf666;transition:.2s}
   .modal button.alt{background:#ffffff18;box-shadow:none}
   .modal button:hover{transform:translateY(-2px) scale(1.04)}
+  #sound{position:fixed;top:12px;right:12px;z-index:7;width:44px;height:44px;border-radius:14px;font-size:20px;cursor:pointer;
+    border:1px solid var(--stroke);background:var(--glass);backdrop-filter:blur(10px);color:var(--text);transition:.2s}
+  #sound:hover{transform:scale(1.1) rotate(-6deg)}
   canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:6}
   @media(max-width:520px){.stat{min-width:70px;font-size:18px}.screen{padding:14px}#menu h1{font-size:26px}}
 </style>
 </head>
 <body>
+<button id="sound" title="Som">🔊</button>
 <div class="blob b1"></div><div class="blob b2"></div>
 
 <!-- MENU INICIAL -->
@@ -237,6 +241,49 @@ function makePlan(){ // valores das minas (com sinal), sorteados antes da 1ª jo
 }
 const fmt=n=>(n<0?'-':'')+String(Math.abs(n)).padStart(n<0?2:3,'0');
 
+/* ---------- sons (sintetizados com WebAudio, sem arquivos) ---------- */
+let audioCtx=null,muted=false;
+try{muted=localStorage.getItem('ms-mute')==='1'}catch(e){}
+function ac(){
+  if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return null}}
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq,dur=.12,type='sine',vol=.12,delay=0,slideTo=0){
+  if(muted)return;const a=ac();if(!a)return;const t=a.currentTime+delay;
+  const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);
+  if(slideTo)o.frequency.exponentialRampToValueAtTime(slideTo,t+dur);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.03);
+}
+function noise(dur,vol,f0,f1,delay=0){
+  if(muted)return;const a=ac();if(!a)return;const t=a.currentTime+delay;
+  const len=Math.floor(a.sampleRate*dur),buf=a.createBuffer(1,len,a.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+  const src=a.createBufferSource();src.buffer=buf;
+  const f=a.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(Math.max(30,f1),t+dur);
+  const g=a.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  src.connect(f);f.connect(g);g.connect(a.destination);src.start(t);
+}
+const SFX={
+  click(){tone(520,.07,'triangle',.1,0,380)},
+  menu(){tone(660,.07,'sine',.1);tone(880,.08,'sine',.07,.05)},
+  start(){[392,523,659,784].forEach((f,i)=>tone(f,.14,'triangle',.11,i*.07))},
+  open(d){tone(340+Math.min(d,16)*30,.09,'sine',.08)},
+  chord(){tone(440,.06,'triangle',.1);tone(554,.08,'triangle',.1,.05)},
+  flag(f){
+    if(f===0)return tone(320,.09,'triangle',.08,0,190);
+    if(f<0){tone(260+f*20,.12,'sawtooth',.06,0,180);tone(190,.1,'square',.04,.04)} // negativa: grave e sombria
+    else{tone(620+f*110,.08,'square',.06);tone(930+f*110,.08,'square',.05,.05)}
+  },
+  boom(){noise(1,.55,2200,50);tone(130,.7,'sawtooth',.28,0,32)},
+  pop(k){noise(.14,.14,1200,150);tone(200+(k%5)*25,.1,'square',.04)},
+  win(){[523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,.28,'triangle',.13,i*.09));noise(.4,.05,6000,3000,.5)}
+};
+function syncSound(){$('#sound').textContent=muted?'🔇':'🔊'}
+$('#sound').onclick=()=>{muted=!muted;try{localStorage.setItem('ms-mute',muted?'1':'0')}catch(e){}syncSound();SFX.menu()};
+syncSound();
+
 /* ---------- menu ---------- */
 function buildMenu(){
   $('#modes').innerHTML=Object.entries(MODES).map(([k,m])=>
@@ -250,14 +297,14 @@ function refreshMenu(){
   $('#levels').innerHTML=Object.entries(LEVELS).map(([k,l])=>
     `<button class="lvl${k===level?' sel':''}" data-k="${k}">${l.name}<small>${l.c}×${l.r} · ${bombsFor(mode,k)} ${hasMulti()?'bombas':'minas'}</small></button>`).join('');
 }
-$('#modes').addEventListener('click',e=>{const b=e.target.closest('.mode');if(!b)return;mode=b.dataset.k;refreshMenu()});
-$('#floors').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;shapes=b.dataset.v==='true';refreshMenu()});
-$('#levels').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;level=b.dataset.k;refreshMenu()});
+$('#modes').addEventListener('click',e=>{const b=e.target.closest('.mode');if(!b)return;mode=b.dataset.k;SFX.menu();refreshMenu()});
+$('#floors').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;shapes=b.dataset.v==='true';SFX.menu();refreshMenu()});
+$('#levels').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;level=b.dataset.k;SFX.menu();refreshMenu()});
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id))}
-function showMenu(){clearInterval(timer);$('#overlay').classList.remove('show');show('menu')}
+function showMenu(){SFX.menu();clearInterval(timer);$('#overlay').classList.remove('show');show('menu')}
 function play(){
   try{localStorage.setItem('ms-mode',mode);localStorage.setItem('ms-level',level);localStorage.setItem('ms-shape',shapes?'1':'0')}catch(e){}
-  show('game');init();
+  SFX.start();show('game');init();
 }
 $('#play').onclick=play;$('#menuBtn').onclick=showMenu;$('#toMenu').onclick=showMenu;
 
@@ -381,7 +428,7 @@ function stackHTML(ch,n,cls){ // n emojis desenhados, um por bandeira/bomba
 }
 function toggleFlag(x,y){
   if(over)return;const g=grid[y][x];if(g.o)return;
-  const nf=nextFlag(g.f);fsum+=nf-g.f;g.f=nf;renderFlag(x,y);setCounter();
+  const nf=nextFlag(g.f);fsum+=nf-g.f;g.f=nf;renderFlag(x,y);setCounter();SFX.flag(nf);
 }
 function reveal(x,y){
   if(over)return;const g=grid[y][x];
@@ -391,17 +438,18 @@ function reveal(x,y){
     const nb=neighbors(x,y);
     const fl=nb.filter(([a,b])=>grid[b][a].f!==0).length;
     const sum=nb.reduce((s,[a,b])=>s+grid[b][a].f,0);
-    if(fl>0&&sum===g.n)nb.forEach(([a,b])=>{if(grid[b][a].f===0&&!grid[b][a].o)reveal(a,b)});
+    if(fl>0&&sum===g.n){SFX.chord();nb.forEach(([a,b])=>{if(grid[b][a].f===0&&!grid[b][a].o)reveal(a,b)})}
     return;
   }
   if(!started){started=true;place(x,y);startTimer()}
   if(g.m!==0)return lose(x,y);
-  const q=[[x,y,0]];g.o=true;
+  const q=[[x,y,0]],depths=new Set();g.o=true;
   while(q.length){
-    const [cx,cy,d]=q.shift();openCell(cx,cy,d);
+    const [cx,cy,d]=q.shift();openCell(cx,cy,d);depths.add(d);
     if(grid[cy][cx].a===0)for(const [a,b] of neighbors(cx,cy)){const t=grid[b][a];
       if(!t.o&&t.f===0&&t.m===0){t.o=true;q.push([a,b,d+1])}}
   }
+  [...depths].sort((a,b)=>a-b).slice(0,16).forEach(d=>setTimeout(()=>SFX.open(d),d*35));
   if(opened===C*R-countMineCells())win();
 }
 function countMineCells(){let k=0;for(const row of grid)for(const g of row)if(g.m!==0)k++;return k}
@@ -430,8 +478,8 @@ function lose(x,y){
     e.classList.remove('flagged','negflag');e.classList.add('open','mine');
     if(m<0)e.classList.add('negmine');
     e.innerHTML=mineHTML(m);
-    if(i===x&&j===y){e.classList.add('boom');boardEl.classList.add('shake');burst(e,40,['#ef4444','#f97316','#fde047'])}
-    else if(k%4===0)burst(e,10,m<0?['#38bdf8','#818cf8']:['#ef4444','#f97316']);
+    if(i===x&&j===y){e.classList.add('boom');boardEl.classList.add('shake');burst(e,40,['#ef4444','#f97316','#fde047']);SFX.boom()}
+    else if(k%4===0){burst(e,10,m<0?['#38bdf8','#818cf8']:['#ef4444','#f97316']);SFX.pop(k)}
   },k*step));
   setTimeout(()=>modal('💥','Boom!','Você pisou numa mina. Tente de novo!'),mines.length*step+700);
 }
@@ -444,7 +492,7 @@ function win(){
   boardEl.classList.add('win');
   let rec='';try{const b=+localStorage.getItem(bestKey());
     if(!b||secs<b){localStorage.setItem(bestKey(),secs);rec=' 🏆 Novo recorde!'}}catch(e){}
-  showBest();confetti();
+  showBest();confetti();SFX.win();
   setTimeout(()=>modal('🎉','Você venceu!',`Tempo: ${secs}s.${rec}`),1200);
 }
 function modal(e,t,p){$('#mEmoji').textContent=e;$('#mTitle').textContent=t;$('#mText').textContent=p;$('#overlay').classList.add('show')}
@@ -467,7 +515,7 @@ function loop(){if(raf)return;raf=requestAnimationFrame(function f(){
   raf=parts.length?requestAnimationFrame(f):0;if(!raf)ctx.clearRect(0,0,cv.width,cv.height)})}
 
 /* ---------- UI ---------- */
-function restart(){$('#overlay').classList.remove('show');init()}
+function restart(){SFX.click();$('#overlay').classList.remove('show');init()}
 faceEl.onclick=restart;$('#again').onclick=restart;
 $('#flagMode').onclick=e=>{flagMode=!flagMode;e.currentTarget.classList.toggle('on',flagMode)};
 addEventListener('keydown',e=>{if((e.key==='r'||e.key==='R')&&$('#game').classList.contains('active'))restart()});
