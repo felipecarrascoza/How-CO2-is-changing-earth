@@ -249,6 +249,13 @@
   #board .cell.open.op0{background:#0b2a57}
   #board .cell.open.op1{background:#40230d}
   .tool[hidden]{display:none}
+  .tidebar{display:flex;gap:8px;justify-content:center;align-items:center;margin:-4px 0 12px;font-size:15px;color:var(--cyan)}
+  .tidebar[hidden]{display:none}
+  .tidebar b{font-family:var(--pix);font-size:15px;color:#fff;text-shadow:-2px 0 var(--pink),2px 0 var(--cyan)}
+  .cell.ghost{color:#8aa7bf}
+  .cell.tidehit::before{content:"";position:absolute;inset:0;background:var(--cyan);opacity:0;pointer-events:none;z-index:2;animation:chordflash .5s both}
+  .tidewave{position:fixed;z-index:60;pointer-events:none;overflow:hidden}
+  .tidewave i{display:block;width:34%;height:100%;background:repeating-linear-gradient(0deg,#4fd8e8cc 0 4px,#2a9fb0cc 4px 8px);border-right:6px solid #fff;box-shadow:0 0 24px #4fd8e8}
   .tool:disabled{opacity:.4;cursor:not-allowed}
   #board.radar .cell{cursor:crosshair}
   .cell.scan::after{content:"";position:absolute;inset:0;background:var(--cyan);opacity:0;pointer-events:none;animation:scanflash .9s var(--sd,0ms) both}
@@ -322,6 +329,7 @@
   #sound:hover{border-color:var(--cyan);transform:translateY(-2px)}
   .px{width:1.2em;height:1.2em;image-rendering:pixelated;vertical-align:-.25em;display:inline-block;pointer-events:none}
   body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,transparent 0 2px,#0000001f 2px 3px)}
+  .cell.twin::after{content:"";position:absolute;inset:1px;border:2px dashed var(--pink);pointer-events:none;z-index:4;animation:ringp 1s ease-in-out infinite}
   .cell.chordprev:not(.open){filter:brightness(1.6);background:#2a6aa0}
   .cell.chordprev.open{box-shadow:inset 0 0 0 2px var(--cyan)}
   .cell.chordhit::before,.cell.chordbad::before{content:"";position:absolute;inset:0;opacity:0;pointer-events:none;z-index:2;animation:chordflash .55s var(--cd,0ms) both}
@@ -397,6 +405,7 @@
     <button id="face" data-i18n-title="tReset">🙂</button>
     <div class="stat"><span>⏱</span><b id="time">000</b></div>
   </div>
+  <div class="tidebar" id="tide" hidden><span data-i18n="tideLbl">Tide in</span> <b id="tideN">5</b> <span data-i18n="tideUnit">moves</span></div>
   <div class="duelbar" id="duel" hidden>
     <div class="pl" id="p0"><span>🔵 Player 1</span><b id="sc0">0</b></div>
     <div class="pl" id="p1"><span>🟠 Player 2</span><b id="sc1">0</b></div>
@@ -447,6 +456,7 @@ const STR={
     mines:'mines',bombs:'bombs',mixName:'Mix',mixDesc:'Combine several modes and play them all at once. Turn it on and pick which ones.',
     mixHint:'Pick 1 or more modes to combine (none = Classic)',floorWord:'Floor',torusHelp:'Edges wrap around (donut)',
     player:n=>`Player ${n}`,even:'EVN',odd:'ODD',
+    tideLbl:'Tide in',tideUnit:'moves',tideToast:'🌊 The tide covered a row!',
     flagFirst:'Open a cell before placing flags',radarFirst:'Open a cell before using the radar',
     boom:'Boom!',boomText:'You stepped on a mine. Try again!',
     duelBoom:p=>`${p} exploded!`,duelBoomText:(w,a,b)=>`${w} wins! Score: 🔵 ${a} × ${b} 🟠`,
@@ -464,6 +474,7 @@ const STR={
     mines:'minas',bombs:'bombas',mixName:'Mix',mixDesc:'Combine vários modos e jogue todos de uma vez. Ligue e marque quais quer.',
     mixHint:'Marque 1 ou mais modos para combinar (nenhum = Clássico)',floorWord:'Piso',torusHelp:'As bordas se conectam (donut)',
     player:n=>`Jogador ${n}`,even:'par',odd:'ímp',
+    tideLbl:'Maré em',tideUnit:'jogadas',tideToast:'🌊 A maré cobriu uma fileira!',
     flagFirst:'Abra uma casa antes de marcar bandeiras',radarFirst:'Abra uma casa antes de usar o radar',
     boom:'Boom!',boomText:'Você pisou numa mina. Tente de novo!',
     duelBoom:p=>`${p} explodiu!`,duelBoomText:(w,a,b)=>`${w} vence! Placar: 🔵 ${a} × ${b} 🟠`,
@@ -484,6 +495,7 @@ const LEVELS_SRC={
   insane:{c:36,r:22,m:180,name:X('Super hard','Super difícil'),emoji:'💀'}
 };
 const RADAR={easy:3,medium:5,hard:8,insane:12};
+const TIDE={easy:6,medium:5,hard:4,insane:3};
 const LIARS={easy:1,medium:2,hard:3,insane:5};
 
 /* quadros dos mini-tutoriais: cada frame é uma grade 5×3 de "tokens"
@@ -553,6 +565,34 @@ const MODES_SRC={
       fr(X('Turn on 📡 Radar (few charges per game) and tap a cell.','Ative 📡 Radar (poucas cargas por partida) e toque numa casa.'),'. . . . .  . . .> . .  . . . . .'),
       fr(X('The radar scans the 5×5 area around it…','O radar escaneia a área 5×5 ao redor…'),'^ ^ ^ ^ ^  ^ ^ ^> ^ ^  ^ ^ ^ ^ ^'),
       fr(X('…and shows the SUM of bombs inside. Here: 4!','…e mostra a SOMA das bombas dentro dela. Aqui: 4!'),'^ ^ ^ ^ ^  ^ ^ ~Σ4* ^ ^  ^ ^ ^ ^ ^')]},
+  echo:{name:X('Echo','Eco'),icon:'📢',
+    desc:X('Numbers also count the outer ring: neighbors plus the cells two steps away (5×5 area).','Os números contam também o anel de fora: vizinhos e as casas a dois passos (área 5×5).'),
+    help:X('Echo: numbers count mines in the 5×5 area (neighbors + outer ring)','Eco: os números contam minas na área 5×5 (vizinhos + anel de fora)'),
+    rules:X(['Each number counts the mines in the 8 neighbors AND in the outer ring around them (a 5×5 area).','Numbers get bigger, so combine them carefully.','A blank cell means no mines in the whole 5×5 area, so its neighbors open on their own.','Clicking a number with the right flags inside its 5×5 area opens the whole area at once.'],
+      ['Cada número conta as minas nos 8 vizinhos E no anel de fora (uma área 5×5).','Os números ficam maiores, então combine-os com cuidado.','Uma casa vazia significa nenhuma mina em toda a área 5×5, então os vizinhos abrem sozinhos.','Clicar num número com as bandeiras certas dentro da área 5×5 abre a área toda de uma vez.']),
+    frames:[
+      fr(X('Echo: the number counts the 8 neighbors AND the outer ring (a 5×5 area).','Eco: o número conta os 8 vizinhos E o anel de fora (uma área 5×5).'),'^ ^ ^ ^ ^  ^ ^ .> ^ ^  ^ ^ ^ ^ ^'),
+      fr(X('Mines can be next to it or two steps away…','As minas podem estar ao lado ou a dois passos…'),'B . . B .  . . . . .  . . . . B'),
+      fr(X('…and all of them count: 1 + 1 + 1 = 3.','…e todas contam: 1 + 1 + 1 = 3.'),'. . . . .  . . 3* . .  . . . . .')]},
+  mirror:{name:X('Mirror','Espelho'),icon:'♊️',
+    desc:X('Mines come in twin pairs, mirrored around the center of the board.','As minas vêm em pares gêmeos, espelhados em torno do centro do tabuleiro.'),
+    help:X('Mirror: every mine has a twin on the opposite side (hover a cell to see its twin)','Espelho: toda mina tem uma gêmea do lado oposto (passe o mouse numa casa para ver a gêmea)'),
+    rules:X(['Mines come in pairs: every mine has a twin at the opposite position, rotated 180° around the center of the board.','The center cell (when there is one) never has a mine.','Hover a cell to see its twin outlined in pink.','Use it to deduce: if you find a mine, you also know where its twin is. The number of mines is always even.'],
+      ['As minas vêm em pares: toda mina tem uma gêmea na posição oposta, girada 180° em torno do centro do tabuleiro.','A casa do centro (quando existe) nunca tem mina.','Passe o mouse numa casa para ver a gêmea contornada em rosa.','Use isso para deduzir: se você achar uma mina, também sabe onde está a gêmea. O número de minas é sempre par.']),
+    frames:[
+      fr(X('Every mine has a twin at the opposite position (rotated 180° around the center).','Toda mina tem uma gêmea na posição oposta (girada 180° em torno do centro).'),'. . . B .  . . . . .  . B . . .'),
+      fr(X('Point at a cell to see its twin.','Aponte para uma casa para ver a gêmea.'),'. . . .> .  . . . . .  . .* . . .'),
+      fr(X('Found one mine? You know where the other one is!','Achou uma mina? Você já sabe onde está a outra!'),'. . . F> .  . . . . .  . .* . . .')]},
+  tide:{name:X('Tide','Maré'),icon:'🌊',
+    desc:X('Every few moves a wave re-covers a row: opened cells close again, leaving only a faint gray number. Remember what you saw!','A cada poucas jogadas uma onda cobre uma fileira de novo: as casas abertas fecham, deixando só um número cinza apagado. Lembre do que viu!'),
+    help:X('Tide: every few moves a wave re-covers a row (gray numbers stay as a memo)','Maré: a cada poucas jogadas uma onda cobre uma fileira de novo (os números cinza ficam de lembrete)'),
+    rules:X(['Every few moves (6 / 5 / 4 / 3 by difficulty) a wave sweeps across a row and covers the cells you had opened there.','Covered cells keep a faint gray number so you can remember, but they are closed again.','Re-open them (they are always safe) when you need them. You only win when every safe cell is open at the same time.','In Duel, re-opened cells give no extra points.'],
+      ['A cada poucas jogadas (6 / 5 / 4 / 3 conforme a dificuldade) uma onda passa por uma fileira e cobre as casas que você tinha aberto ali.','As casas cobertas guardam um número cinza apagado para você lembrar, mas voltam a ficar fechadas.','Reabra-as (elas são sempre seguras) quando precisar. Você só vence quando todas as casas seguras estiverem abertas ao mesmo tempo.','No Duelo, casas reabertas não dão pontos extras.']),
+    frames:[
+      fr(X('You open cells and numbers appear.','Você abre casas e os números aparecem.'),'. . . . .  1 2 1 . .  . . . . .'),
+      fr(X('Every few moves a wave sweeps across a row…','A cada poucas jogadas uma onda passa por uma fileira…'),'. . . . .  1^ 2^ 1^ _^ _^  . . . . .'),
+      fr(X('…and covers the cells you opened. Only a faint gray number remains.','…e cobre as casas que você abriu. Só fica um número cinza apagado.'),'. . . . .  g1 g2 g1 . .  . . . . .'),
+      fr(X('Remember them and re-open the cells (always safe) when you need them.','Lembre delas e reabra as casas (sempre seguras) quando precisar.'),'. . . . .  g1> g2 g1 . .  . . . . .')]},
   duel:{name:X('Duel','Duelo'),icon:'⚔️',
     desc:X('Two players on the same device take turns. Whoever opens a mine loses!','Dois jogadores no mesmo aparelho se alternam. Quem abrir uma mina perde!'),
     help:X('🔵 and 🟠 take turns · 1 point per cell opened · mine = defeat · right flag +2, wrong −2','🔵 e 🟠 se alternam · 1 ponto por casa aberta · mina = derrota · bandeira certa +2, errada −2'),
@@ -611,19 +651,20 @@ const isPoly=f=>f==='irr'||f==='tri';
 let cur=A(),shapes=isPoly(floor);
 const has=k=>cur.has(k);
 let C,R,M,NET,plan,adj=[],pts=[],grid,cells,started,over,fsum,opened,timer,secs,flagMode=false,touching=false;
-let nbr=null,generating=false,genId=0;
+let nbr=null,NA=null,mirrorOf=null,mpairs=[],generating=false,genId=0;
+let moves=0,seenCount=0;
 let turn=0,scores=[0,0],radar=[0,0],radarOn=false,pendingWin=false;
 
-const bombsFor=(l,set=A())=>Math.round(LEVELS[l].m*(set.has('multi')?1.3:1));
+const bombsFor=(l,set=A())=>{let n=Math.round(LEVELS[l].m*(set.has('multi')?1.3:1));if(set.has('mirror')&&n%2)n++;return n};
 function makePlan(){ // valores das minas (com sinal), sorteados antes da 1ª jogada
-  const e=[];
-  for(let i=0;i<M;i++){
+  const e=[],cnt=has('mirror')?M/2:M;
+  for(let i=0;i<cnt;i++){
     if(has('multi')&&e.length&&Math.random()<.35){const k=e[Math.random()*e.length|0];if(k<3){e[e.indexOf(k)]=k+1;continue}}
     e.push(1);
   }
   if(has('negative')){const n=Math.round(e.length*.3);
     e.map((v,i)=>i).sort(()=>Math.random()-.5).slice(0,n).forEach(i=>e[i]=-e[i])}
-  return e;
+  return has('mirror')?e.flatMap(v=>[v,v]):e;
 }
 const fmt=n=>(n<0?'-':'')+String(Math.abs(n)).padStart(n<0?2:3,'0');
 
@@ -659,6 +700,7 @@ const SFX={
   charge(){tone(70,1.3,'sine',.09,0,420);tone(140,1.3,'triangle',.04,0,840)},
   fuseStart(){tone(120,.9,'sawtooth',.06,0,520)},
   tick(k){tone(k%2?520:880,.05,'square',.07)},
+  tide(){noise(.8,.22,400,3000);tone(180,.7,'sine',.06,0,520)},
   chain(k){noise(.2,.22,2600,180);tone(110+(k*37)%90,.16,'sawtooth',.08,0,45)},
   slam(){noise(.7,.5,3500,60);tone(70,.5,'sawtooth',.25,0,30);tone(1400,.12,'square',.05,0,300)},
   chord(){tone(440,.06,'triangle',.1);tone(554,.08,'triangle',.1,.05)},
@@ -720,6 +762,7 @@ function paintToken(e,tok){
   if(tok===''||tok==='.'){}
   else if(tok==='_')cls.push('open');
   else if(/^-?\d+$/.test(tok)){const v=+tok;cls.push('open','n'+(v===0?0:((Math.abs(v)-1)%8)+1));if(v<0)cls.push('neg');html=tok}
+  else if(/^g\d+$/.test(tok)){cls.push('ghost');html=tok.slice(1)}
   else if(/^F+$/.test(tok)){cls.push('flagged');html=stackHTML('🚩',tok.length,' flag')}
   else if(/^N+$/.test(tok)){cls.push('negflag');html=stackHTML('🚩',tok.length,' flag neg')}
   else if(/^B+$/.test(tok)){cls.push('open','mine');html=stackHTML('💣',tok.length,'')}
@@ -813,12 +856,12 @@ function gameLabels(){
 function init(){
   const LV=LEVELS[level];C=LV.c;R=LV.r;M=bombsFor(level,cur);plan=makePlan();NET=plan.reduce((a,b)=>a+b,0);
   genId++;generating=false;hideLoading();resetZoom();$('#reviewbar').hidden=true;endSnap=null;fatal=null;
-  clearInterval(timer);secs=0;started=false;over=false;fsum=0;opened=0;pendingWin=false;
+  clearInterval(timer);secs=0;started=false;over=false;fsum=0;opened=0;pendingWin=false;moves=0;seenCount=0;
   turn=0;scores=[0,0];radar=[RADAR[level],RADAR[level]];radarOn=false;
   $('#time').textContent='000';setCounter();faceEl.textContent='🙂';
   gameLabels();
   $('#game').classList.toggle('duel',has('duel'));
-  $('#duel').hidden=!has('duel');$('#radarBtn').hidden=!has('detector');
+  $('#duel').hidden=!has('duel');$('#tide').hidden=!has('tide');updateTide();$('#radarBtn').hidden=!has('detector');
   updateDuel();updateRadar();
   boardEl.className=(shapes?'shapes ':'')+floor;boardEl.innerHTML='';boardEl.style.cssText='';
   const w=Math.min(36,Math.floor((Math.min(innerWidth-90,1100))/C)-3);
@@ -837,6 +880,8 @@ function init(){
     }}
   }
   nbr=cells.map((_,i)=>neighbors(i%C,i/C|0).map(([a,b])=>b*C+a));
+  NA=has('echo')?nbr.map((l,i)=>{const st=new Set(l);for(const j of l)for(const k of nbr[j])st.add(k);st.delete(i);return [...st]}):nbr;
+  buildMirror();
   showBest();
 }
 /* piso irregular: diagrama de Voronoi com pontos sorteados */
@@ -925,6 +970,8 @@ function setupCell(el,x,y){
   });
   el.addEventListener('mouseleave',()=>{if(both)chordPreview(x,y,false);both=false;rDown=false});
   el.addEventListener('contextmenu',e=>e.preventDefault());
+  el.addEventListener('mouseenter',()=>{if(has('mirror')&&mirrorOf){const j=mirrorOf[y*C+x];if(j!==y*C+x)cells[j].classList.add('twin')}});
+  el.addEventListener('mouseleave',()=>{if(mirrorOf){const j=mirrorOf[y*C+x];if(cells[j])cells[j].classList.remove('twin')}});
   el.addEventListener('touchstart',()=>{touching=true;long=false;
     pressTimer=setTimeout(()=>{long=true;toggleFlag(x,y);navigator.vibrate&&navigator.vibrate(30)},380)},{passive:true});
   ['touchend','touchmove','touchcancel'].forEach(t=>el.addEventListener(t,()=>{clearTimeout(pressTimer);setTimeout(()=>touching=false,700)},{passive:true}));
@@ -944,11 +991,10 @@ function neighbors(x,y){
 
 function placeLayout(m){
   for(let i=0;i<C*R;i++)grid[i/C|0][i%C].m=m[i];
-  for(let y=0;y<R;y++)for(let x=0;x<C;x++){
-    const nb=neighbors(x,y),g=grid[y][x];
-    g.n=nb.reduce((s,[a,b])=>s+grid[b][a].m,0);
-    g.a=nb.filter(([a,b])=>grid[b][a].m!==0).length;
-    g.dn=g.n;g.liar=false;g.h=null;
+  for(let i=0;i<C*R;i++){ // número = soma das minas na "área do número" (vizinhos; no Eco, 5×5)
+    const g=grid[i/C|0][i%C];let n=0,a=0;
+    for(const j of NA[i]){const v=m[j];n+=v;if(v!==0)a++}
+    g.n=n;g.a=a;g.dn=n;g.liar=false;g.h=null;
   }
   prepareDisplay();
 }
@@ -972,10 +1018,16 @@ function prepareDisplay(){
 /* ---------- geração garantida: simula um jogador lógico depois do 1º clique ---------- */
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 function makeLayout(s){
-  const N=C*R,safe=new Set([s,...nbr[s]]),free=[];
+  const N=C*R,safe=new Set([s,...NA[s]]),m=new Int8Array(N);
+  if(has('mirror')){ // minas em pares gêmeos (posições opostas)
+    const cand=mpairs.filter(([i,j])=>!safe.has(i)&&!safe.has(j));shuffle(cand);
+    for(let k=0;k<plan.length/2&&k<cand.length;k++){m[cand[k][0]]=plan[2*k];m[cand[k][1]]=plan[2*k+1]}
+    return m;
+  }
+  const free=[];
   for(let i=0;i<N;i++)if(!safe.has(i))free.push(i);
   shuffle(free);
-  const m=new Int8Array(N);plan.forEach((v,i)=>{m[free[i]]=v});
+  plan.forEach((v,i)=>{m[free[i]]=v});
   return m;
 }
 /* Resolve por lógica pura (propagação de intervalos + subtração de restrições), sem chutar.
@@ -983,10 +1035,10 @@ function makeLayout(s){
 function analyze(mv,start){
   const N=mv.length,dmin=has('negative')?(has('multi')?-3:-1):0,dmax=has('multi')?3:1;
   const n=new Int16Array(N),a=new Uint8Array(N);
-  for(let i=0;i<N;i++)for(const j of nbr[i]){n[i]+=mv[j];if(mv[j]!==0)a[i]++}
+  for(let i=0;i<N;i++)for(const j of NA[i]){n[i]+=mv[j];if(mv[j]!==0)a[i]++}
   const lo=new Int8Array(N).fill(dmin),hi=new Int8Array(N).fill(dmax),opened=new Uint8Array(N),pend=new Uint8Array(N);
   let safeTotal=0;for(let i=0;i<N;i++)if(mv[i]===0)safeTotal++;
-  const cons=[],varCons=Array.from({length:N},()=>[]),queue=[],toOpen=[],seen=new Set();
+  const cons=[],varCons=Array.from({length:N},()=>[]),queue=[],toOpen=[],seen=new Set(),mi=has('mirror')?mirrorOf:null;
   let cnt=0,bad=false;
   const enq=k=>{const c=cons[k];if(!c.q){c.q=true;queue.push(k)}};
   const addCons=(vars,T)=>{const k=cons.length;cons.push({v:vars,T,q:false});for(const j of vars)varCons[j].push(k);enq(k)};
@@ -996,9 +1048,18 @@ function analyze(mv,start){
       const c=st.pop();if(opened[c])continue;
       if(mv[c]!==0){bad=true;continue}
       opened[c]=1;lo[c]=hi[c]=0;cnt++;
+      if(mi&&mi[c]!==c&&!opened[mi[c]])st.push(mi[c]); // a gêmea de uma casa segura também é segura
       if(a[c]===0){for(const j of nbr[c])if(!opened[j])st.push(j)}
-      else addCons(nbr[c].filter(j=>!opened[j]),n[c]);
+      else addCons(NA[c].filter(j=>!opened[j]),n[c]);
       for(const k of varCons[c])enq(k);
+    }
+  }
+  function touch(j){ // domínio de j mudou: sincroniza com a gêmea (Espelho), enfileira restrições e detecta casas seguras
+    const list=[j];
+    if(mi&&mi[j]!==j){const t=mi[j],nl=Math.max(lo[t],lo[j]),nh=Math.min(hi[t],hi[j]);lo[t]=lo[j]=nl;hi[t]=hi[j]=nh;list.push(t)}
+    for(const x of list){
+      if(lo[x]===0&&hi[x]===0&&!opened[x]&&!pend[x]){pend[x]=1;toOpen.push(x)}
+      for(const q of varCons[x])enq(q);
     }
   }
   function propagate(){
@@ -1011,9 +1072,7 @@ function analyze(mv,start){
         for(const j of c.v){
           const nl=Math.max(lo[j],c.T-(sh-hi[j])),nh=Math.min(hi[j],c.T-(sl-lo[j]));
           if(nl!==lo[j]||nh!==hi[j]){
-            lo[j]=nl;hi[j]=nh;ch=true;
-            if(nl===0&&nh===0&&!opened[j]&&!pend[j]){pend[j]=1;toOpen.push(j)}
-            for(const q of varCons[j])if(q!==k)enq(q);
+            lo[j]=nl;hi[j]=nh;ch=true;touch(j);
           }
         }
         if(!ch)break;
@@ -1164,6 +1223,32 @@ function toggleFlag(x,y){
   const nf=nextFlag(g.f),prev=g.f;fsum+=nf-g.f;g.f=nf;g.fo=turn;renderFlag(x,y,prev);setCounter();SFX.flag(nf);
 }
 /* jogada do jogador: abre casa/vizinhos; no duelo pontua e passa a vez */
+function updateTide(){const n=TIDE[level];$('#tideN').textContent=n-(moves%n)}
+function coverCell(i){ // a maré fecha a casa de novo, deixando só o número em cinza
+  const g=grid[i/C|0][i%C];if(!g.o)return;
+  g.o=false;opened--;
+  const e=cells[i];
+  e.className=e.className.replace(/\b(open|neg|hint|hp|hge|hle|op0|op1|n[0-8]|liar|rv-ok|rv-miss|rv-bad)\b/g,'').replace(/\s+/g,' ').trim()+' ghost tidehit';
+  e.style.animationDelay='';setTimeout(()=>e.classList.remove('tidehit'),520);
+}
+function startTide(){
+  const id=genId,open=[];
+  grid.forEach((row,y)=>row.forEach((g,x)=>{if(g.o)open.push(y*C+x)}));
+  if(open.length<4)return;
+  const pick=open[Math.random()*open.length|0],band=[];
+  if(!shapes){const r=pick/C|0;for(let x=0;x<C;x++)band.push(r*C+x)}
+  else{const py=pts[pick][1];for(let i=0;i<C*R;i++)if(Math.abs(pts[i][1]-py)<.55)band.push(i)}
+  if(!band.some(i=>grid[i/C|0][i%C].o))return;
+  const rects=band.map(i=>cells[i].getBoundingClientRect());
+  const x0=Math.min(...rects.map(r=>r.left)),x1=Math.max(...rects.map(r=>r.right)),y0=Math.min(...rects.map(r=>r.top)),y1=Math.max(...rects.map(r=>r.bottom));
+  const w=document.createElement('div');w.className='tidewave';w.style.cssText=`left:${x0}px;top:${y0}px;width:${x1-x0}px;height:${y1-y0}px`;
+  w.innerHTML='<i></i>';document.body.appendChild(w);
+  w.firstChild.animate([{transform:'translateX(-40%)'},{transform:`translateX(${x1-x0}px)`}],{duration:900,easing:'ease-in-out'});
+  setTimeout(()=>w.remove(),950);
+  SFX.tide();toast(tr('tideToast'));
+  band.forEach((i,k)=>{if(!grid[i/C|0][i%C].o)return;
+    setTimeout(()=>{if(id===genId&&!over)coverCell(i)},300+((rects[k].left-x0)/Math.max(1,x1-x0))*560)});
+}
 function move(x,y,loud){
   if(over)return;
   if(!started){ // 1º clique: gera um tabuleiro que dá para resolver por lógica (com tela de loading)
@@ -1171,12 +1256,13 @@ function move(x,y,loud){
     startBoard(x,y).then(ok=>{generating=false;if(!ok)return;started=true;startTimer();move(x,y)});
     return;
   }
-  const before=opened;
+  const before=opened,seen0=seenCount;
   reveal(x,y,loud);
   if(over)return;
-  const gain=opened-before;
-  if(has('duel')&&gain>0){scores[turn]+=gain;updateDuel()}
+  const gain=opened-before,fresh=seenCount-seen0;
+  if(has('duel')&&fresh>0){scores[turn]+=fresh;updateDuel()}
   if(pendingWin){pendingWin=false;return win()}
+  if(gain>0&&has('tide')){moves++;updateTide();if(moves%TIDE[level]===0)startTide()}
   if(has('duel')&&gain>0)passTurn();
 }
 function reveal(x,y,loud){
@@ -1185,7 +1271,7 @@ function reveal(x,y,loud){
   if(g.o){ // abrir vizinhos (chord) — usa o número mostrado
     if(has('partial')){if(loud)chordFx(x,y,false);return}
     if(!g.a)return;
-    const nb=neighbors(x,y);
+    const nb=areaPairs(x,y);
     const fl=nb.filter(([a,b])=>grid[b][a].f!==0).length;
     const sum=nb.reduce((s,[a,b])=>s+grid[b][a].f,0);
     if(fl>0&&sum===g.dn){chordFx(x,y,true);nb.forEach(([a,b])=>{if(grid[b][a].f===0&&!grid[b][a].o)reveal(a,b)})}
@@ -1206,7 +1292,8 @@ function reveal(x,y,loud){
 function countMineCells(){let k=0;for(const row of grid)for(const g of row)if(g.m!==0)k++;return k}
 function openCell(x,y,d){
   const g=grid[y][x],e=el(x,y);opened++;
-  e.innerHTML='';e.classList.remove('flagged','negflag','spawn');e.classList.add('open');
+  if(!g.seen){g.seen=true;seenCount++}
+  e.innerHTML='';e.classList.remove('flagged','negflag','spawn','ghost');e.classList.add('open');
   e.style.animationDelay=(d*35)+'ms';
   if(g.a>0){
     let t;
@@ -1217,9 +1304,25 @@ function openCell(x,y,d){
   if(has('duel'))e.classList.add('op'+turn);
 }
 /* efeito ao abrir vizinhos: onda de choque + clarões nos vizinhos + partículas */
+const areaPairs=(x,y)=>NA[y*C+x].map(j=>[j%C,j/C|0]);
+function buildMirror(){ // gêmea de cada casa: rotação de 180° (quadrado/toroidal) ou a casa mais próxima do ponto refletido (irregular/triangular)
+  const N=C*R;mirrorOf=new Int32Array(N);
+  if(!shapes){for(let y=0;y<R;y++)for(let x=0;x<C;x++)mirrorOf[y*C+x]=(R-1-y)*C+(C-1-x)}
+  else{
+    let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;pts.forEach(([x,y])=>{x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)});
+    const cx=(x0+x1)/2,cy=(y0+y1)/2,used=new Uint8Array(N);
+    const order=[...Array(N).keys()].sort((a,b)=>Math.hypot(pts[a][0]-cx,pts[a][1]-cy)-Math.hypot(pts[b][0]-cx,pts[b][1]-cy));
+    for(const i of order){
+      if(used[i])continue;const rx=2*cx-pts[i][0],ry=2*cy-pts[i][1];let best=-1,bd=1e9;
+      for(let j=0;j<N;j++){if(j===i||used[j])continue;const d=Math.hypot(pts[j][0]-rx,pts[j][1]-ry);if(d<bd){bd=d;best=j}}
+      used[i]=1;if(best>=0){used[best]=1;mirrorOf[i]=best;mirrorOf[best]=i}else mirrorOf[i]=i;
+    }
+  }
+  mpairs=[];for(let i=0;i<N;i++){const j=mirrorOf[i];if(j>i)mpairs.push([i,j])}
+}
 function chordPreview(x,y,on){
   el(x,y).classList.toggle('chordprev',on);
-  neighbors(x,y).forEach(([a,b])=>el(a,b).classList.toggle('chordprev',on));
+  areaPairs(x,y).forEach(([a,b])=>el(a,b).classList.toggle('chordprev',on));
 }
 function pixelSparks(elm,n,colors){ // faíscas quadradas (pixel), sem círculos
   const r=elm.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
@@ -1233,7 +1336,7 @@ function chordFx(x,y,ok){
   ring.className='shock'+(ok?'':' bad');ring.style.left=cx+'px';ring.style.top=cy+'px';ring.style.setProperty('--sz',Math.max(r.width,24)+'px');
   document.body.appendChild(ring);setTimeout(()=>ring.remove(),800);
   const cls=ok?'chordhit':'chordbad';
-  [[x,y],...neighbors(x,y)].forEach(([a,b],i)=>{
+  [[x,y],...areaPairs(x,y)].forEach(([a,b],i)=>{
     const n=el(a,b);n.style.setProperty('--cd',(i*28)+'ms');n.classList.add(cls);setTimeout(()=>n.classList.remove(cls),900);
   });
   if(ok){pixelSparks(c,34,['#4fd8e8','#ff5c93','#ffffff']);boardEl.classList.remove('pulse');void boardEl.offsetWidth;boardEl.classList.add('pulse');SFX.chordGo()}
