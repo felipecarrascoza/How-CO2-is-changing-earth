@@ -101,9 +101,14 @@
   .cell.open[class*=" n"]{text-shadow:0 0 10px currentColor}
   .cell.open.neg{box-shadow:inset 0 2px 6px #000a,inset 0 0 0 1.5px #38bdf877}
   .cell.open.neg::before{content:"";position:absolute;inset:0;border-radius:8px;background:linear-gradient(145deg,#0ea5e922,transparent)}
-  .flag{animation:flagpop .4s cubic-bezier(.2,1.6,.4,1);display:inline-block}
+  .flag{animation:flagpop .4s cubic-bezier(.2,1.6,.4,1) backwards;display:inline-block}
   .flag.neg{filter:hue-rotate(180deg) saturate(1.4) drop-shadow(0 0 6px #38bdf8)}
   @keyframes flagpop{from{transform:scale(0) translateY(-14px) rotate(-40deg)}}
+  .stack{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;line-height:1.05;pointer-events:none}
+  .stack.s2{font-size:calc(var(--cell)*.4)}
+  .stack.s3{font-size:calc(var(--cell)*.34);width:calc(var(--cell)*.92)}
+  #board.shapes .stack.s2{font-size:calc(var(--cell)*.34)}
+  #board.shapes .stack.s3{font-size:calc(var(--cell)*.3);width:calc(var(--cell)*.82)}
   .badge{position:absolute;right:2px;bottom:1px;font:800 calc(var(--cell)*.3)/1 inherit;font-style:normal;
     background:#000a;color:#fff;border-radius:6px;padding:2px 3px;animation:flagpop .3s}
   .badge.neg{color:#38bdf8;font-size:calc(var(--cell)*.38)}
@@ -111,7 +116,7 @@
   .cell.negflag{background:linear-gradient(145deg,#0284c7,#1e3a8a)}
   .cell.mine{background:#3a0d1c;animation:boom .5s both}
   .cell.negmine{background:#0c2a4a}
-  .cell.negmine>span{filter:invert(1) drop-shadow(0 0 4px #38bdf8)}
+  .cell.negmine .stack>span{filter:invert(1) drop-shadow(0 0 4px #38bdf8)}
   .cell.boom{background:radial-gradient(circle,#ef4444,#7f1d1d)!important;z-index:2}
   @keyframes boom{0%{transform:scale(.5);filter:brightness(3)}50%{transform:scale(1.35)}100%{transform:none}}
   .cell.wrong{background:#4b1d1d;opacity:.8}
@@ -367,8 +372,12 @@ function nextFlag(f){
 function renderFlag(x,y){
   const g=grid[y][x],e=el(x,y);
   e.classList.toggle('flagged',g.f>0);e.classList.toggle('negflag',g.f<0);
-  e.innerHTML=g.f===0?'':`<span class="flag${g.f<0?' neg':''}">🚩</span>`+
-    (g.f<0?`<i class="badge neg">−${g.f<-1?-g.f:''}</i>`:g.f>1?`<i class="badge">×${g.f}</i>`:'');
+  e.innerHTML=g.f===0?'':stackHTML('🚩',Math.abs(g.f),g.f<0?' flag neg':' flag');
+}
+function stackHTML(ch,n,cls){ // n emojis desenhados, um por bandeira/bomba
+  let h=`<div class="stack s${n}">`;
+  for(let i=0;i<n;i++)h+=`<span class="${cls.trim()}" style="animation-delay:${i*90}ms">${ch}</span>`;
+  return h+'</div>';
 }
 function toggleFlag(x,y){
   if(over)return;const g=grid[y][x];if(g.o)return;
@@ -407,7 +416,7 @@ function openCell(x,y,d){
     if(t.length>=3)e.classList.add('long');
   }
 }
-function mineHTML(m){return '<span>💣</span>'+(m<0?`<i class="badge neg">−${m<-1?-m:''}</i>`:m>1?`<i class="badge">×${m}</i>`:'')}
+function mineHTML(m){return stackHTML('💣',Math.abs(m),'')}
 function lose(x,y){
   over=true;clearInterval(timer);faceEl.textContent='😵';
   const mines=[];
