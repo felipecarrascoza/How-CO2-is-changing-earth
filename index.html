@@ -1031,6 +1031,12 @@ function chordPreview(x,y,on){
   el(x,y).classList.toggle('chordprev',on);
   neighbors(x,y).forEach(([a,b])=>el(a,b).classList.toggle('chordprev',on));
 }
+function pixelSparks(elm,n,colors){ // faíscas quadradas (pixel), sem círculos
+  const r=elm.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
+  for(let i=0;i<n;i++){const a=Math.random()*6.283,sp=2+Math.random()*6;
+    parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,g:.18,life:1,d:.02+Math.random()*.014,sz:2*(1+(Math.random()*2.5|0)),c:colors[i%colors.length],sq:true})}
+  loop();
+}
 function chordFx(x,y,ok){
   const c=el(x,y),r=c.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
   const ring=document.createElement('div');
@@ -1040,7 +1046,7 @@ function chordFx(x,y,ok){
   [[x,y],...neighbors(x,y)].forEach(([a,b],i)=>{
     const n=el(a,b);n.style.setProperty('--cd',(i*28)+'ms');n.classList.add(cls);setTimeout(()=>n.classList.remove(cls),900);
   });
-  if(ok){burst(c,26,['#4fd8e8','#ff5c93','#ffffff']);boardEl.classList.remove('pulse');void boardEl.offsetWidth;boardEl.classList.add('pulse');SFX.chordGo()}
+  if(ok){pixelSparks(c,34,['#4fd8e8','#ff5c93','#ffffff']);boardEl.classList.remove('pulse');void boardEl.offsetWidth;boardEl.classList.add('pulse');SFX.chordGo()}
   else SFX.deny();
 }
 function mineHTML(m){return stackHTML('💣',Math.abs(m),'')}
