@@ -263,6 +263,18 @@
   .px{width:1.2em;height:1.2em;image-rendering:pixelated;vertical-align:-.25em;display:inline-block;pointer-events:none}
   .stack .px{vertical-align:middle}
   body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,transparent 0 2px,#0000001f 2px 3px)}
+  .cell.chordprev:not(.open){filter:brightness(1.6);background:#2a6aa0}
+  .cell.chordprev.open{box-shadow:inset 0 0 0 2px var(--cyan)}
+  .cell.chordhit::before,.cell.chordbad::before{content:"";position:absolute;inset:0;opacity:0;pointer-events:none;z-index:2;animation:chordflash .55s var(--cd,0ms) both}
+  .cell.chordhit::before{background:linear-gradient(90deg,var(--pink),var(--cyan))}
+  .cell.chordbad::before{background:var(--red)}
+  @keyframes chordflash{0%{opacity:0;transform:scale(.6)}30%{opacity:.9;transform:scale(1.15)}100%{opacity:0;transform:scale(1)}}
+  .shock{position:fixed;z-index:60;width:var(--sz);height:var(--sz);border:3px solid #fff;transform:translate(-50%,-50%) scale(1);pointer-events:none;
+    box-shadow:-3px 0 var(--pink),3px 0 var(--cyan),inset -3px 0 var(--pink),inset 3px 0 var(--cyan);animation:shock .7s cubic-bezier(.1,.7,.3,1) forwards}
+  .shock.bad{border-color:var(--red);box-shadow:0 0 0 2px #000;animation-name:shockbad;animation-duration:.4s}
+  @keyframes shock{to{transform:translate(-50%,-50%) scale(6);opacity:0;border-width:1px}}
+  @keyframes shockbad{to{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
+  #board.pulse{animation:rgbsplit .5s}
   canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:6}
   @media(max-width:520px){.stat{min-width:78px;font-size:13px}.screen{padding:14px}#menu h1{font-size:26px}.play{font-size:12px}}
 </style>
@@ -338,7 +350,7 @@ const fr=(cap,s,ms)=>({cap,cells:s.trim().split(/\s+/),ms});
 
 const MODES={
   classic:{name:'Clássico',icon:'💣',desc:'O campo minado de sempre.',
-    help:'Clique direito / segurar = bandeira · clique num número = abrir vizinhos',
+    help:'Clique direito / segurar = bandeira · dois botões (ou clique) num número = abrir vizinhos',
     rules:['Clique numa casa para abrir. O número mostra quantas minas existem nos vizinhos.','Clique direito (ou segure o dedo) marca uma bandeira 🚩.','Clique num número cercado pelas bandeiras certas para abrir os vizinhos de uma vez.','Abra todas as casas sem mina para vencer. A primeira jogada é sempre segura.'],
     frames:[
       fr('Clique numa casa para abri-la.','. . . . .  . . .> . .  . . . . .'),
@@ -484,6 +496,8 @@ const SFX={
   start(){[392,523,659,784].forEach((f,i)=>tone(f,.14,'triangle',.11,i*.07))},
   open(d){tone(340+Math.min(d,16)*30,.09,'sine',.08)},
   chord(){tone(440,.06,'triangle',.1);tone(554,.08,'triangle',.1,.05)},
+  chordGo(){tone(220,.28,'square',.07,0,880);tone(330,.28,'sawtooth',.05,.03,1320);noise(.25,.1,5000,400)},
+  deny(){tone(150,.16,'sawtooth',.09,0,90);tone(110,.18,'square',.06,.08,70)},
   flag(f){
     if(f===0)return tone(320,.09,'triangle',.08,0,190);
     if(f<0){tone(260+f*20,.12,'sawtooth',.06,0,180);tone(190,.1,'square',.04,.04)}
@@ -721,11 +735,25 @@ function mountPolys(G,s){
 const pos=(i,j)=>shapes?pts[i]:[i,j];
 const dist=(a,b)=>{const p=pos(a[0],a[1]),q=pos(b[0],b[1]);return Math.hypot(p[0]-q[0],p[1]-q[1])};
 function setupCell(el,x,y){
-  let pressTimer,long=false;
-  el.addEventListener('click',()=>{ if(long){long=false;return}
+  let pressTimer,long=false,rDown=false,both=false,suppress=false;
+  el.addEventListener('click',()=>{ if(suppress){suppress=false;return}
+    if(long){long=false;return}
     if(radarOn)return scan(x,y);
     flagMode&&!grid[y][x].o ? toggleFlag(x,y) : move(x,y)});
-  el.addEventListener('contextmenu',e=>{e.preventDefault();if(!touching)toggleFlag(x,y)});
+  /* os dois botões (ou o botão do meio) num número = abrir vizinhos com efeito */
+  el.addEventListener('mousedown',e=>{
+    if(e.buttons!==3&&e.button!==1)suppress=false;
+    if(radarOn)return;
+    if(e.button===1){e.preventDefault();suppress=true;if(grid[y][x].o)move(x,y,true);return}
+    if(e.button===2)rDown=true;
+    if(e.buttons===3){both=true;suppress=true;chordPreview(x,y,true)}
+  });
+  el.addEventListener('mouseup',e=>{
+    if(both){both=false;rDown=false;chordPreview(x,y,false);if(grid[y][x].o)move(x,y,true);return}
+    if(e.button===2&&rDown){rDown=false;if(!touching)toggleFlag(x,y)}
+  });
+  el.addEventListener('mouseleave',()=>{if(both)chordPreview(x,y,false);both=false;rDown=false});
+  el.addEventListener('contextmenu',e=>e.preventDefault());
   el.addEventListener('touchstart',()=>{touching=true;long=false;
     pressTimer=setTimeout(()=>{long=true;toggleFlag(x,y);navigator.vibrate&&navigator.vibrate(30)},380)},{passive:true});
   ['touchend','touchmove','touchcancel'].forEach(t=>el.addEventListener(t,()=>{clearTimeout(pressTimer);setTimeout(()=>touching=false,700)},{passive:true}));
@@ -902,7 +930,7 @@ function toggleFlag(x,y){
   const nf=nextFlag(g.f);fsum+=nf-g.f;g.f=nf;g.fo=turn;renderFlag(x,y);setCounter();SFX.flag(nf);
 }
 /* jogada do jogador: abre casa/vizinhos; no duelo pontua e passa a vez */
-function move(x,y){
+function move(x,y,loud){
   if(over)return;
   if(!started){ // 1º clique: gera um tabuleiro que dá para resolver por lógica (com tela de loading)
     if(generating)return;generating=true;
@@ -910,22 +938,24 @@ function move(x,y){
     return;
   }
   const before=opened;
-  reveal(x,y);
+  reveal(x,y,loud);
   if(over)return;
   const gain=opened-before;
   if(has('duel')&&gain>0){scores[turn]+=gain;updateDuel()}
   if(pendingWin){pendingWin=false;return win()}
   if(has('duel')&&gain>0)passTurn();
 }
-function reveal(x,y){
+function reveal(x,y,loud){
   if(over)return;const g=grid[y][x];
   if(g.f!==0)return;
   if(g.o){ // abrir vizinhos (chord) — usa o número mostrado
-    if(!g.a||has('partial'))return;
+    if(has('partial')){if(loud)chordFx(x,y,false);return}
+    if(!g.a)return;
     const nb=neighbors(x,y);
     const fl=nb.filter(([a,b])=>grid[b][a].f!==0).length;
     const sum=nb.reduce((s,[a,b])=>s+grid[b][a].f,0);
-    if(fl>0&&sum===g.dn){SFX.chord();nb.forEach(([a,b])=>{if(grid[b][a].f===0&&!grid[b][a].o)reveal(a,b)})}
+    if(fl>0&&sum===g.dn){chordFx(x,y,true);nb.forEach(([a,b])=>{if(grid[b][a].f===0&&!grid[b][a].o)reveal(a,b)})}
+    else if(loud||fl>0)chordFx(x,y,false);
     return;
   }
   if(!started)return;
@@ -951,6 +981,23 @@ function openCell(x,y,d){
     e.textContent=t;if(t.length>=3)e.classList.add('long');
   }
   if(has('duel'))e.classList.add('op'+turn);
+}
+/* efeito ao abrir vizinhos: onda de choque + clarões nos vizinhos + partículas */
+function chordPreview(x,y,on){
+  el(x,y).classList.toggle('chordprev',on);
+  neighbors(x,y).forEach(([a,b])=>el(a,b).classList.toggle('chordprev',on));
+}
+function chordFx(x,y,ok){
+  const c=el(x,y),r=c.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  const ring=document.createElement('div');
+  ring.className='shock'+(ok?'':' bad');ring.style.left=cx+'px';ring.style.top=cy+'px';ring.style.setProperty('--sz',Math.max(r.width,24)+'px');
+  document.body.appendChild(ring);setTimeout(()=>ring.remove(),800);
+  const cls=ok?'chordhit':'chordbad';
+  [[x,y],...neighbors(x,y)].forEach(([a,b],i)=>{
+    const n=el(a,b);n.style.setProperty('--cd',(i*28)+'ms');n.classList.add(cls);setTimeout(()=>n.classList.remove(cls),900);
+  });
+  if(ok){burst(c,26,['#4fd8e8','#ff5c93','#ffffff']);boardEl.classList.remove('pulse');void boardEl.offsetWidth;boardEl.classList.add('pulse');SFX.chordGo()}
+  else SFX.deny();
 }
 function mineHTML(m){return stackHTML('💣',Math.abs(m),'')}
 function revealLiars(){
