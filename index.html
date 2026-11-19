@@ -252,6 +252,8 @@
   #sound{position:fixed;top:12px;right:12px;z-index:7;width:44px;height:44px;border-radius:3px;font-size:19px;cursor:pointer;
     border:2px solid var(--line);background:var(--panel);transition:.15s}
   #sound:hover{border-color:var(--cyan);transform:translateY(-2px)}
+  .px{width:1.2em;height:1.2em;image-rendering:pixelated;vertical-align:-.25em;display:inline-block;pointer-events:none}
+  .stack .px{vertical-align:middle}
   canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:6}
   @media(max-width:520px){.stat{min-width:78px;font-size:13px}.screen{padding:14px}#menu h1{font-size:26px}.play{font-size:12px}}
 </style>
@@ -1056,6 +1058,58 @@ renderModes();
 for(let i=0;i<26;i++){const b=document.createElement('div'),z=2+Math.random()*4|0;
   b.className='bub';b.style.cssText=`left:${Math.random()*100}vw;width:${z}px;height:${z}px;animation-duration:${14+Math.random()*22}s;animation-delay:-${Math.random()*30}s`;
   document.body.prepend(b)}
+
+/* ---------- emojis em pixel art: cada emoji vira um sprite 20×20 (sem suavização, poucas cores) ---------- */
+const EMO=/(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic}|[\u{1F3FB}-\u{1F3FF}])*)/u;
+const EMO_G=new RegExp(EMO.source,'gu');
+const spriteCache=new Map(),PXN=20;
+function sprite(ch){
+  if(spriteCache.has(ch))return spriteCache.get(ch);
+  let url=null;
+  try{
+    const cv=document.createElement('canvas');cv.width=cv.height=PXN;
+    const c=cv.getContext('2d',{willReadFrequently:true});
+    c.textAlign='center';c.textBaseline='middle';
+    c.font=`${Math.round(PXN*.8)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",sans-serif`;
+    c.fillText(ch,PXN/2,PXN/2+1);
+    const im=c.getImageData(0,0,PXN,PXN),d=im.data;let solid=0;
+    for(let i=0;i<d.length;i+=4){
+      if(d[i+3]<120){d[i+3]=0;continue}
+      d[i+3]=255;solid++;
+      for(let k=0;k<3;k++)d[i+k]=Math.min(255,Math.round(d[i+k]/64)*64); // paleta reduzida
+    }
+    if(solid>6){c.putImageData(im,0,0);url=cv.toDataURL()}
+  }catch(e){}
+  spriteCache.set(ch,url);return url;
+}
+function pixelate(root){
+  const nodes=[],w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  for(let n=w.nextNode();n;n=w.nextNode()){
+    const t=n.parentNode&&n.parentNode.nodeName;
+    if(t==='SCRIPT'||t==='STYLE'||t==='TITLE'||t==='TEXTAREA')continue;
+    if(EMO.test(n.nodeValue))nodes.push(n);
+  }
+  for(const n of nodes){
+    const parts=n.nodeValue.split(EMO),frag=document.createDocumentFragment();
+    parts.forEach((part,i)=>{
+      if(i%2===0){if(part)frag.appendChild(document.createTextNode(part));return}
+      const u=sprite(part);
+      if(!u){frag.appendChild(document.createTextNode(part));return}
+      const img=document.createElement('img');img.className='px';img.src=u;img.alt=part;img.draggable=false;frag.appendChild(img);
+    });
+    n.parentNode.replaceChild(frag,n);
+  }
+}
+const pxObs=new MutationObserver(ms=>{
+  for(const m of ms){
+    if(m.type==='characterData'){if(m.target.parentNode&&EMO.test(m.target.nodeValue))pixelate(m.target.parentNode);continue}
+    m.addedNodes.forEach(n=>{if(n.nodeType===3){if(n.parentNode&&EMO.test(n.nodeValue))pixelate(n.parentNode)}else if(n.nodeType===1&&n.nodeName!=='IMG')pixelate(n)});
+  }
+});
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(()=>{
+  pixelate(document.body);
+  pxObs.observe(document.body,{childList:true,subtree:true,characterData:true});
+});
 </script>
 </body>
 </html>
