@@ -116,6 +116,16 @@
   @keyframes boom{0%{transform:scale(.5);filter:brightness(3)}50%{transform:scale(1.35)}100%{transform:none}}
   .cell.wrong{background:#4b1d1d;opacity:.8}
   .cell.wrong::after{content:"✖";position:absolute;color:#f87171;font-size:14px;right:3px;top:0}
+  #board.shapes{display:block;position:relative;background:#05071acc;border-radius:14px}
+  #board.shapes .cell{position:absolute;border-radius:0;box-shadow:none}
+  #board.shapes .cell:not(.open):hover{transform:scale(1.05);z-index:3}
+  #board.shapes .cell.open{background:#161b4d;box-shadow:none}
+  #board.shapes .cell.open.neg{background:#0b2a4d}
+  #board.shapes .cell.negmine{background:#0c2a4a}
+  #board.shapes .cell.mine:not(.negmine){background:#3a0d1c}
+  #board.shapes .cell.boom{z-index:4}
+  #board.shapes .badge{right:auto;bottom:auto;left:calc(50% + var(--cell)*.1);top:calc(50% + var(--cell)*.08)}
+  #board.shapes .cell.wrong::after{right:auto;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px;opacity:.9}
   #board.shake{animation:shake .5s}
   @keyframes shake{20%{transform:translate(-8px,3px)}40%{transform:translate(8px,-4px)}60%{transform:translate(-6px,2px)}80%{transform:translate(5px,-2px)}}
   #board.win .cell{animation:wave .8s both}
@@ -150,6 +160,8 @@
   <p class="sub">Escolha um modo de jogo e a dificuldade</p>
   <div class="label">Modo</div>
   <div class="modes" id="modes"></div>
+  <div class="label">Piso</div>
+  <div class="levels" id="floors"></div>
   <div class="label">Dificuldade</div>
   <div class="levels" id="levels"></div>
   <button class="play" id="play">JOGAR ▶</button>
@@ -200,10 +212,10 @@ const MODES={
 };
 const $=s=>document.querySelector(s);
 const boardEl=$('#board'),faceEl=$('#face');
-let mode='classic',level='easy';
-try{mode=localStorage.getItem('ms-mode')||mode;level=localStorage.getItem('ms-level')||level}catch(e){}
+let mode='classic',level='easy',shapes=false;
+try{mode=localStorage.getItem('ms-mode')||mode;level=localStorage.getItem('ms-level')||level;shapes=localStorage.getItem('ms-shape')==='1'}catch(e){}
 if(!MODES[mode])mode='classic';if(!LEVELS[level])level='easy';
-let C,R,M,NET,plan,grid,cells,started,over,fsum,opened,timer,secs,flagMode=false,touching=false;
+let C,R,M,NET,plan,adj=[],pts=[],grid,cells,started,over,fsum,opened,timer,secs,flagMode=false,touching=false;
 
 const bombsFor=(m,l)=>Math.round(LEVELS[l].m*MODES[m].mult);
 const hasNeg=()=>mode==='negative'||mode==='chaos';
@@ -227,45 +239,100 @@ function buildMenu(){
   refreshMenu();
 }
 function refreshMenu(){
+  $('#floors').innerHTML=[[false,'▦','Quadrados'],[true,'⬢','Formas irregulares']].map(([v,i,n])=>
+    `<button class="lvl${v===shapes?' sel':''}" data-v="${v}">${i} ${n}</button>`).join('');
   document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('sel',b.dataset.k===mode));
   $('#levels').innerHTML=Object.entries(LEVELS).map(([k,l])=>
     `<button class="lvl${k===level?' sel':''}" data-k="${k}">${l.name}<small>${l.c}×${l.r} · ${bombsFor(mode,k)} ${hasMulti()?'bombas':'minas'}</small></button>`).join('');
 }
 $('#modes').addEventListener('click',e=>{const b=e.target.closest('.mode');if(!b)return;mode=b.dataset.k;refreshMenu()});
+$('#floors').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;shapes=b.dataset.v==='true';refreshMenu()});
 $('#levels').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;level=b.dataset.k;refreshMenu()});
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id))}
 function showMenu(){clearInterval(timer);$('#overlay').classList.remove('show');show('menu')}
 function play(){
-  try{localStorage.setItem('ms-mode',mode);localStorage.setItem('ms-level',level)}catch(e){}
+  try{localStorage.setItem('ms-mode',mode);localStorage.setItem('ms-level',level);localStorage.setItem('ms-shape',shapes?'1':'0')}catch(e){}
   show('game');init();
 }
 $('#play').onclick=play;$('#menuBtn').onclick=showMenu;$('#toMenu').onclick=showMenu;
 
 /* ---------- jogo ---------- */
-const bestKey=()=>`ms-best-${mode}-${level}`;
+const bestKey=()=>`ms-best-${mode}-${level}`+(shapes?'-irr':'');
 function showBest(){let b=null;try{b=localStorage.getItem(bestKey())}catch(e){}$('#best').textContent=b?b+'s':'—'}
 const setCounter=()=>{$('#mines').textContent=fmt(NET-fsum)};
 
 function init(){
-  ({c:C,r:R}=LEVELS[level]);M=bombsFor(mode,level);plan=makePlan();NET=plan.reduce((a,b)=>a+b,0);
+  const LV=LEVELS[level];C=LV.c;R=LV.r;M=bombsFor(mode,level);plan=makePlan();NET=plan.reduce((a,b)=>a+b,0);
   clearInterval(timer);secs=0;started=false;over=false;fsum=0;opened=0;
   $('#time').textContent='000';setCounter();faceEl.textContent='🙂';
-  $('#tag').textContent=`${MODES[mode].icon} ${MODES[mode].name} · ${LEVELS[level].name}`;
+  $('#tag').textContent=`${MODES[mode].icon} ${MODES[mode].name} · ${LV.name}`+(shapes?' · ⬢':'');
   $('#help').textContent=MODES[mode].help;
-  boardEl.className='';boardEl.innerHTML='';
+  boardEl.className=shapes?'shapes':'';boardEl.innerHTML='';boardEl.style.cssText='';
   const w=Math.min(36,Math.floor((Math.min(innerWidth-90,1100))/C)-3);
-  document.documentElement.style.setProperty('--cell',Math.max(24,w)+'px');
-  boardEl.style.gridTemplateColumns=`repeat(${C},var(--cell))`;
+  const s=Math.max(24,w);
+  document.documentElement.style.setProperty('--cell',s+'px');
   grid=[];cells=[];
-  for(let y=0;y<R;y++){grid.push([]);for(let x=0;x<C;x++){
-    grid[y].push({m:0,o:false,f:0,n:0,a:0});
-    const el=document.createElement('div');el.className='cell spawn';
-    el.style.animationDelay=((x+y)*18)+'ms';
-    el.addEventListener('animationend',()=>el.classList.remove('spawn'),{once:true});
-    setupCell(el,x,y);boardEl.appendChild(el);cells.push(el);
-  }}
+  if(shapes)buildShapes(s);
+  else{
+    boardEl.style.gridTemplateColumns=`repeat(${C},var(--cell))`;
+    for(let y=0;y<R;y++){grid.push([]);for(let x=0;x<C;x++){
+      grid[y].push({m:0,o:false,f:0,n:0,a:0});
+      const el=document.createElement('div');el.className='cell spawn';
+      el.style.animationDelay=((x+y)*18)+'ms';
+      el.addEventListener('animationend',()=>el.classList.remove('spawn'),{once:true});
+      setupCell(el,x,y);boardEl.appendChild(el);cells.push(el);
+    }}
+  }
   showBest();
 }
+/* piso de formas irregulares: diagrama de Voronoi com pontos sorteados */
+function clip(poly,nx,ny,c,tag){
+  const out=[],n=poly.length;
+  for(let i=0;i<n;i++){
+    const A=poly[i],B=poly[(i+1)%n],da=nx*A.x+ny*A.y-c,db=nx*B.x+ny*B.y-c;
+    const I=()=>{const k=da/(da-db);return{x:A.x+(B.x-A.x)*k,y:A.y+(B.y-A.y)*k}};
+    if(da<=0){out.push({x:A.x,y:A.y,t:A.t});if(db>0){const p=I();out.push({x:p.x,y:p.y,t:tag})}}
+    else if(db<=0){const p=I();out.push({x:p.x,y:p.y,t:A.t})}
+  }
+  return out;
+}
+function buildShapes(s){
+  const {c:gc,r:gr}=LEVELS[level],W=gc*s,H=gr*s,g=Math.max(3,s*.09);
+  const raw=[];
+  for(let j=0;j<gr;j++)for(let i=0;i<gc;i++)raw.push([(i+.5+(Math.random()-.5)*.84)*s,(j+.5+(Math.random()-.5)*.84)*s]);
+  const sets=raw.map(()=>new Set()),polys=[];
+  raw.forEach((p,k)=>{
+    const ci=k%gc,cj=k/gc|0;
+    let poly=[[g/2,g/2],[W-g/2,g/2],[W-g/2,H-g/2],[g/2,H-g/2]].map(([x,y])=>({x,y,t:-1}));
+    for(let dj=-2;dj<=2;dj++)for(let di=-2;di<=2;di++){
+      const i=ci+di,j=cj+dj;if((!di&&!dj)||i<0||j<0||i>=gc||j>=gr)continue;
+      const m=j*gc+i,q=raw[m],dx=q[0]-p[0],dy=q[1]-p[1],len=Math.hypot(dx,dy),nx=dx/len,ny=dy/len;
+      poly=clip(poly,nx,ny,nx*(p[0]+q[0])/2+ny*(p[1]+q[1])/2-g/2,m);
+    }
+    polys.push(poly);
+    poly.forEach((v,i)=>{const w=poly[(i+1)%poly.length];
+      if(v.t>=0&&Math.hypot(w.x-v.x,w.y-v.y)>2){sets[k].add(v.t);sets[v.t].add(k)}});
+  });
+  adj=sets.map(a=>[...a]);pts=[];grid=[[]];
+  polys.forEach((poly,k)=>{
+    let A=0,cx=0,cy=0;
+    poly.forEach((a,i)=>{const b=poly[(i+1)%poly.length],f=a.x*b.y-b.x*a.y;A+=f;cx+=(a.x+b.x)*f;cy+=(a.y+b.y)*f});
+    A/=2;cx/=6*A;cy/=6*A;
+    const hw=Math.max(...poly.map(v=>Math.abs(v.x-cx)))+1,hh=Math.max(...poly.map(v=>Math.abs(v.y-cy)))+1;
+    const el=document.createElement('div');el.className='cell spawn';
+    el.style.cssText=`left:${cx-hw}px;top:${cy-hh}px;width:${2*hw}px;height:${2*hh}px;clip-path:polygon(${
+      poly.map(v=>`${(v.x-cx+hw).toFixed(1)}px ${(v.y-cy+hh).toFixed(1)}px`).join(',')})`;
+    pts.push([cx/s,cy/s]);
+    el.style.animationDelay=((cx+cy)/s*18)+'ms';
+    el.addEventListener('animationend',()=>el.classList.remove('spawn'),{once:true});
+    grid[0].push({m:0,o:false,f:0,n:0,a:0});
+    setupCell(el,k,0);boardEl.appendChild(el);cells.push(el);
+  });
+  boardEl.style.width=W+'px';boardEl.style.height=H+'px';
+  C=polys.length;R=1;
+}
+const pos=(i,j)=>shapes?pts[i]:[i,j];
+const dist=(a,b)=>{const p=pos(a[0],a[1]),q=pos(b[0],b[1]);return Math.hypot(p[0]-q[0],p[1]-q[1])};
 function setupCell(el,x,y){
   let pressTimer,long=false;
   el.addEventListener('click',()=>{ if(long){long=false;return}
@@ -276,7 +343,7 @@ function setupCell(el,x,y){
   ['touchend','touchmove','touchcancel'].forEach(t=>el.addEventListener(t,()=>{clearTimeout(pressTimer);setTimeout(()=>touching=false,700)},{passive:true}));
 }
 const el=(x,y)=>cells[y*C+x];
-function neighbors(x,y){const a=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+function neighbors(x,y){if(shapes)return adj[x].map(j=>[j,0]);const a=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
   if(!dx&&!dy)continue;const nx=x+dx,ny=y+dy;if(nx>=0&&ny>=0&&nx<C&&ny<R)a.push([nx,ny])}return a}
 
 function place(sx,sy){
@@ -347,7 +414,7 @@ function lose(x,y){
   for(let j=0;j<R;j++)for(let i=0;i<C;i++){const g=grid[j][i];
     if(g.m!==0&&g.f!==g.m)mines.push([i,j]);
     else if(g.m===0&&g.f!==0)el(i,j).classList.add('wrong');}
-  mines.sort((a,b)=>Math.hypot(a[0]-x,a[1]-y)-Math.hypot(b[0]-x,b[1]-y));
+  mines.sort((a,b)=>dist(a,[x,y])-dist(b,[x,y]));
   const step=Math.max(12,Math.min(60,900/mines.length));
   mines.forEach(([i,j],k)=>setTimeout(()=>{
     const e=el(i,j),m=grid[j][i].m;
@@ -364,7 +431,7 @@ function win(){
   for(let j=0;j<R;j++)for(let i=0;i<C;i++){const g=grid[j][i];
     if(g.m!==0&&g.f!==g.m){g.f=g.m;renderFlag(i,j)}}
   fsum=NET;setCounter();
-  cells.forEach((e,k)=>{e.style.animationDelay=((k%C+(k/C|0))*40)+'ms'});
+  cells.forEach((e,k)=>{const q=pos(k%C,k/C|0);e.style.animationDelay=((q[0]+q[1])*40)+'ms'});
   boardEl.classList.add('win');
   let rec='';try{const b=+localStorage.getItem(bestKey());
     if(!b||secs<b){localStorage.setItem(bestKey(),secs);rec=' 🏆 Novo recorde!'}}catch(e){}
