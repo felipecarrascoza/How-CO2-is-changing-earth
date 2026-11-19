@@ -183,10 +183,10 @@
   .badge.neg{color:#8ec5ff}
   .cell.flagged{background:#7a2a4f;box-shadow:inset 3px 3px 0 #b8487e,inset -3px -3px 0 #451430}
   .cell.negflag{background:#1f4e9c;box-shadow:inset 3px 3px 0 #3d7fe0,inset -3px -3px 0 #102a58}
-  .cell.mine{background:#2a0f1d;box-shadow:inset 0 0 0 1px #5a1d36;animation:boom .45s both}
+  .cell.mine{background:#2a0f1d;box-shadow:inset 0 0 0 1px #5a1d36}
   .cell.negmine{background:#0a2145;box-shadow:inset 0 0 0 1px #2d6fd0}
   .cell.negmine .stack>span{filter:invert(1) drop-shadow(0 0 4px #4fa8ff)}
-  .cell.boom{background:var(--red)!important;z-index:2}
+  .cell.boom{background:var(--red)!important;z-index:2;animation:boom .45s both}
   @keyframes boom{0%{transform:scale(.5)}50%{transform:scale(1.35)}100%{transform:none}}
   .cell.wrong{background:#4b1d2a}
   .cell.wrong::after{content:"✖";position:absolute;color:var(--red);font-size:16px;right:2px;top:-2px}
@@ -325,7 +325,8 @@
   @keyframes shock{to{transform:translate(-50%,-50%) scale(6);opacity:0;border-width:1px}}
   @keyframes shockbad{to{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
   #board.pulse{animation:rgbsplit .5s}
-  #game.quake .top,#game.quake .hud,#game.quake .boardwrap,#game.quake .foot{animation:rumble2 .07s steps(2) infinite}
+  #game.quake .hud,#game.quake .boardwrap{animation:rumble2 .08s steps(2) infinite}
+  #board.shake2{animation:shake .5s}
   @keyframes rumble2{25%{transform:translate(-3px,2px)}50%{transform:translate(3px,-2px)}75%{transform:translate(-2px,-3px)}}
   #game.kick{animation:kick .22s ease-out}
   @keyframes kick{0%{transform:translate(calc(var(--kx)*1px),calc(var(--ky)*1px)) scale(1.025)}100%{transform:none}}
@@ -1139,9 +1140,10 @@ function disintegrate(layer,neg){
   });
   loop();
 }
+function emo(ch){const u=sprite(ch);return u?`<img class="px" src="${u}" alt="${ch}" draggable="false">`:ch}
 function stackHTML(ch,n,cls){ // n emojis desenhados, um por bandeira/bomba
   let h=`<div class="stack s${n}">`;
-  for(let i=0;i<n;i++)h+=`<span class="${cls.trim()}" style="animation-delay:${i*90}ms">${ch}</span>`;
+  for(let i=0;i<n;i++)h+=`<span class="${cls.trim()}" style="animation-delay:${i*90}ms">${emo(ch)}</span>`;
   return h+'</div>';
 }
 function toggleFlag(x,y){
@@ -1231,20 +1233,20 @@ function revealLiars(){
   grid.flat().forEach((g,i)=>{if(g.liar&&g.o){const e=cells[i];e.classList.add('liar');e.insertAdjacentHTML('beforeend','<i class="badge">🤥</i>')}});
 }
 /* derrota: reação em cadeia — as minas explodem uma depois da outra, cada vez mais rápido, com a tela tremendo */
-function kick(power){
-  const g=$('#game'),a=Math.random()*6.283;
-  g.style.setProperty('--kx',(Math.cos(a)*10*power).toFixed(1));g.style.setProperty('--ky',(Math.sin(a)*10*power).toFixed(1));
-  g.classList.remove('kick');void g.offsetWidth;g.classList.add('kick');
+let lastKick=0;
+function kick(power){ // tranco na tela via Web Animations (sem forçar layout)
+  const now=performance.now();if(now-lastKick<110&&power<1)return;lastKick=now;
+  const a=Math.random()*6.283,dx=Math.cos(a)*10*power,dy=Math.sin(a)*10*power;
+  $('#game').animate([{transform:`translate(${dx}px,${dy}px) scale(1.02)`},{transform:'none'}],{duration:200,easing:'ease-out'});
 }
 let lastBoomT=0,endSnap=null,fatal=null;
-function blast(elm,power,neg){
-  const r=elm.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
+function blastAt(x,y,w,n,neg,ring){ // explosão em coordenadas já medidas (sem recalcular layout)
   const cols=neg?['#4fa8ff','#8ec5ff','#ffffff','#4fd8e8']:['#ff4d5e','#ff9a4f','#ffd166','#ffffff'];
-  const n=Math.round(12+power*40);
-  for(let i=0;i<n;i++){const a=Math.random()*6.283,sp=2+Math.random()*(5+power*8);
-    parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1.5,g:.2,life:1,d:.016+Math.random()*.012,sz:2*(1+(Math.random()*2.5|0)),c:cols[i%4],sq:true})}
-  if(power>.5){const ring=document.createElement('div');ring.className='shock';ring.style.left=x+'px';ring.style.top=y+'px';
-    ring.style.setProperty('--sz',Math.max(r.width,24)+'px');document.body.appendChild(ring);setTimeout(()=>ring.remove(),800)}
+  if(parts.length>1500)n=Math.min(n,3); // limite de partículas vivas
+  for(let i=0;i<n;i++){const a=Math.random()*6.283,sp=2+Math.random()*(5+n*.15);
+    parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1.5,g:.2,life:1,d:.022+Math.random()*.014,sz:2*(1+(Math.random()*2.5|0)),c:cols[i%4],sq:true})}
+  if(ring){const r=document.createElement('div');r.className='shock';r.style.left=x+'px';r.style.top=y+'px';
+    r.style.setProperty('--sz',Math.max(w,24)+'px');document.body.appendChild(r);setTimeout(()=>r.remove(),800)}
   loop();
 }
 function lose(x,y){
@@ -1255,27 +1257,30 @@ function lose(x,y){
     if(g.m!==0&&g.f!==g.m)mines.push([i,j]);
     else if(g.m===0&&g.f!==0)el(i,j).classList.add('wrong');}
   mines.sort((a,b)=>dist(a,[x,y])-dist(b,[x,y]));
+  // mede as posições UMA vez (evita recalcular layout a cada explosão, que travava)
+  const pos0=mines.map(([i,j])=>{const r=el(i,j).getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2,r.width]});
   // tempo entre explosões diminui (cadeia acelerando), total limitado a ~2 s
   const gaps=mines.map((_,k)=>k===0?0:Math.max(10,130*Math.pow(.9,k)));
   const sum=gaps.reduce((a,b)=>a+b,0),sc=Math.min(1,2000/Math.max(sum,1));
-  let t=0;const times=gaps.map(g=>(t+=g*sc));
+  let tm=0;const times=gaps.map(g=>(tm+=g*sc));
+  const per=Math.max(3,Math.min(24,Math.round(600/Math.max(1,mines.length))));
   g0.classList.add('quake');
   mines.forEach(([i,j],k)=>setTimeout(()=>{
     const e=el(i,j),m=grid[j][i].m,first=(i===x&&j===y);
     e.classList.remove('flagged','negflag');e.classList.add('open','mine');
     if(m<0)e.classList.add('negmine');
     e.innerHTML=mineHTML(m);
-    neighbors(i,j).forEach(([a,b])=>{const n=el(a,b);if(!n.classList.contains('mine')){n.classList.add('blast');setTimeout(()=>n.classList.remove('blast'),420)}});
-    const big=first?1:Math.max(.25,.9-k*.02);
-    if(first){e.classList.add('boom');boardEl.classList.add('shake');SFX.boom()}
-    blast(e,big,m<0);
-    if(first||k%2===0)kick(first?1.6:.5);
-    const now=performance.now();if(!first&&now-lastBoomT>40){lastBoomT=now;SFX.chain(k)}
+    if(k<30)neighbors(i,j).forEach(([a,b])=>{const n=el(a,b);if(!n.classList.contains('mine')&&!n.classList.contains('blast'))n.classList.add('blast')});
+    if(first){e.classList.add('boom');boardEl.classList.add('shake2');SFX.boom()}
+    const [px,py,pw]=pos0[k];
+    blastAt(px,py,pw,first?60:per,m<0,first||k%8===0);
+    if(first||k%3===0)kick(first?1.6:.45);
+    const now=performance.now();if(!first&&now-lastBoomT>60){lastBoomT=now;SFX.chain(k)}
   },times[k]||0));
   const end=(times[times.length-1]||0)+250;
   setTimeout(()=>{ // clímax: clarão branco, tremor forte e a última explosão
     const f=document.createElement('div');f.className='flashfull';document.body.appendChild(f);setTimeout(()=>f.remove(),700);
-    kick(2.2);SFX.slam();boardEl.classList.remove('shake');void boardEl.offsetWidth;boardEl.classList.add('shake');
+    kick(2.2);SFX.slam();boardEl.classList.remove('shake2');void boardEl.offsetWidth;boardEl.classList.add('shake2');
   },end);
   setTimeout(()=>{g0.classList.remove('quake')},end+500);
   revealLiars();
@@ -1376,8 +1381,9 @@ function confetti(){const cols=['#8b5cf6','#22d3ee','#f472b6','#fde047','#4ade80
 function loop(){if(raf)return;raf=requestAnimationFrame(function f(){
   ctx.clearRect(0,0,cv.width,cv.height);
   parts=parts.filter(p=>p.life>0);
+  let la=-1,lc='';
   for(const p of parts){if(p.dl>0)p.dl--;else{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.life-=p.d}
-    ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.c;
+    const al=Math.max(0,Math.round(p.life*6)/6);if(al!==la){ctx.globalAlpha=al;la=al}if(p.c!==lc){ctx.fillStyle=p.c;lc=p.c}
     p.rot?ctx.fillRect(p.x,p.y,p.sz,p.sz*.6):p.px?ctx.fillRect(Math.round(p.x),Math.round(p.y),Math.ceil(p.sz),Math.ceil(p.sz)):p.sq?ctx.fillRect(Math.round(p.x/2)*2,Math.round(p.y/2)*2,p.sz,p.sz):(ctx.beginPath(),ctx.arc(p.x,p.y,p.sz,0,6.28),ctx.fill())}
   raf=parts.length?requestAnimationFrame(f):0;if(!raf)ctx.clearRect(0,0,cv.width,cv.height)})}
 
