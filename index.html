@@ -61,6 +61,9 @@
   .mode:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink)}
   .mode:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
   .mode.sel{background:var(--yellow);transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+  .mode.mixcard{border-style:dashed}
+  .mode.mixcard.sel{border-style:solid;background:var(--green);color:#fff}
+  .mode.mixcard.sel .d{color:#fff;opacity:.9}
   .mode .ic{font-size:30px;display:inline-block}
   .mode:hover .ic{animation:wiggle .5s}
   @keyframes wiggle{25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
@@ -270,9 +273,6 @@
 <div class="screen active" id="menu">
   <h1>Campo Minado</h1>
   <p class="sub">Escolha o modo, o piso e a dificuldade</p>
-  <label class="mixbar" id="mixBar"><input type="checkbox" id="mixBox"><span class="sw"></span>
-    <span class="mt"><b>🎛️ Mix de modos</b><span>Ligue para marcar vários modos e jogar todos juntos</span></span>
-    <span class="qm" data-tut="mix" title="Como funciona">?</span></label>
   <div id="mixHint"></div>
   <div class="label">Modo</div>
   <div class="modes" id="modes"></div>
@@ -499,24 +499,24 @@ syncSound();
 
 /* ---------- menu ---------- */
 function renderModes(){
-  const ks=Object.keys(MODES).filter(k=>!mix||k!=='classic');
-  $('#modes').innerHTML=ks.map(k=>{const m=MODES[k];
-    return `<button class="mode${mix?' mixing':''}" data-k="${k}"><span class="qm" data-tut="${k}" title="Como funciona">?</span><div class="ic">${m.icon}</div><b>${m.name}</b><span class="d">${m.desc}</span></button>`}).join('');
+  const ks=Object.keys(MODES).filter(k=>!mix||k!=='classic').concat('mix');
+  $('#modes').innerHTML=ks.map(k=>{const m=k==='mix'?{icon:MIXINFO.icon,name:'Mix',desc:'Combine vários modos e jogue todos de uma vez. Ligue e marque quais quer.'}:MODES[k];
+    return `<button class="mode${mix&&k!=='mix'?' mixing':''}${k==='mix'?' mixcard':''}" data-k="${k}"><span class="qm" data-tut="${k}" title="Como funciona">?</span><div class="ic">${m.icon}</div><b>${m.name}</b><span class="d">${m.desc}</span></button>`}).join('');
   refreshMenu();
 }
 function refreshMenu(){
-  $('#mixBox').checked=mix;$('#mixBar').classList.toggle('on',mix);
   $('#mixHint').textContent=mix?(sel.size?'':'Marque 1 ou mais modos para combinar (nenhum = Clássico)'):'';
-  document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('sel',mix?sel.has(b.dataset.k):b.dataset.k===mode));
+  document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('sel',b.dataset.k==='mix'?mix:mix?sel.has(b.dataset.k):b.dataset.k===mode));
   $('#floors').innerHTML=Object.entries(FLOORS).map(([k,f])=>
     `<button class="lvl${k===floor?' sel':''}" data-k="${k}">${f.icon} ${f.name}<span class="qm" data-tut="floor-${k}" title="Como funciona">?</span></button>`).join('');
   const multi=A().has('multi');
   $('#levels').innerHTML=Object.entries(LEVELS).map(([k,l])=>
     `<button class="lvl${k===level?' sel':''}" data-k="${k}">${l.emoji} ${l.name}<small>${l.c}×${l.r} · ${bombsFor(k)} ${multi?'bombas':'minas'}</small></button>`).join('');
 }
-$('#mixBox').onchange=e=>{mix=e.target.checked;if(mix&&!sel.size&&mode!=='classic')sel.add(mode);SFX.menu();renderModes()};
 $('#modes').addEventListener('click',e=>{const b=e.target.closest('.mode');if(!b)return;
-  const k=b.dataset.k;if(mix){sel.has(k)?sel.delete(k):sel.add(k)}else mode=k;SFX.menu();refreshMenu()});
+  const k=b.dataset.k;
+  if(k==='mix'){mix=!mix;if(mix&&!sel.size&&mode!=='classic')sel.add(mode);SFX.menu();return renderModes()}
+  if(mix){sel.has(k)?sel.delete(k):sel.add(k)}else mode=k;SFX.menu();refreshMenu()});
 $('#floors').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;floor=b.dataset.k;SFX.menu();refreshMenu()});
 $('#levels').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;level=b.dataset.k;SFX.menu();refreshMenu()});
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id))}
