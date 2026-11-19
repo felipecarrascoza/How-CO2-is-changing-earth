@@ -290,6 +290,18 @@
   @keyframes armed{50%{filter:brightness(2) drop-shadow(-2px 0 #ff5c93) drop-shadow(2px 0 #4fd8e8);transform:scale(1.12)}}
   #game.slam .top,#game.slam .hud,#game.slam .foot,#game.slam .boardwrap{animation:shake .5s}
   #game.slam #board{animation:rgbsplit .6s}
+  #reviewbar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9;width:min(640px,94vw);background:var(--panel);border:2px solid var(--cyan);
+    border-radius:3px;padding:12px 16px;box-shadow:0 0 30px #4fd8e844;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;animation:appIn .3s steps(6)}
+  #reviewbar[hidden]{display:none}
+  #rvText{font-size:14px;line-height:1.4;flex:1;min-width:220px}
+  #rvText b{color:var(--cyan)}
+  .rvbtns{display:flex;gap:8px}
+  .cell.rv-ok::before{content:"✓";position:absolute;top:0;right:3px;font-family:var(--ui);font-weight:700;font-size:calc(var(--cell)*.34);line-height:1;color:var(--green);text-shadow:0 0 6px var(--green);z-index:3}
+  .cell.rv-miss::before{content:"!";position:absolute;top:0;right:3px;font-family:var(--ui);font-weight:700;font-size:calc(var(--cell)*.4);line-height:1;color:#ffb454;text-shadow:0 0 6px #ffb454;z-index:3}
+  .cell.rv-miss{box-shadow:inset 0 0 0 2px #ffb454}
+  .cell.rv-bad{background:#7a1f33!important;box-shadow:inset 0 0 0 2px var(--red)}
+  .cell.rv-fatal{z-index:6;animation:fatal .5s steps(2) infinite}
+  @keyframes fatal{50%{filter:brightness(1.8) drop-shadow(-3px 0 #ff5c93) drop-shadow(3px 0 #4fd8e8)}}
   canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:6}
   @media(max-width:520px){.stat{min-width:78px;font-size:13px}.screen{padding:14px}#menu h1{font-size:26px}.play{font-size:12px}}
 </style>
@@ -339,9 +351,10 @@
 </div>
 
 <div id="overlay"><div class="modal"><div class="big" id="mEmoji"></div><h2 id="mTitle"></h2><p id="mText"></p>
-  <div class="row"><button id="again">Jogar de novo</button><button id="toMenu" class="alt">Menu</button></div></div></div>
+  <div class="row"><button id="again">Jogar de novo</button><button id="review" class="alt">🔍 Revisar</button><button id="toMenu" class="alt">Menu</button></div></div></div>
 <canvas id="fx"></canvas>
 <div id="toast"></div>
+<div id="reviewbar" hidden><div id="rvText"></div><div class="rvbtns"><button class="tool" id="rvAgain">Jogar de novo</button><button class="tool" id="rvMenu">Menu</button></div></div>
 <div id="loading"><div class="lbox"><div class="spin"><i></i><i></i><i></i><span>💣</span></div>
   <h3>Analisando possibilidades…</h3><p id="lText"></p><div class="lbar"><div id="lFill"></div></div><small id="lStat"></small></div></div>
 <div id="tut"><div class="tutbox"><button class="x" id="tutX">✕</button><h2 id="tutT"></h2>
@@ -554,7 +567,7 @@ $('#modes').addEventListener('click',e=>{const b=e.target.closest('.mode');if(!b
 $('#floors').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;floor=b.dataset.k;SFX.menu();refreshMenu()});
 $('#levels').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;level=b.dataset.k;SFX.menu();refreshMenu()});
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id))}
-function showMenu(){SFX.menu();genId++;generating=false;hideLoading();resetZoom();clearInterval(timer);$('#overlay').classList.remove('show');show('menu')}
+function showMenu(){SFX.menu();genId++;generating=false;hideLoading();resetZoom();$('#reviewbar').hidden=true;clearInterval(timer);$('#overlay').classList.remove('show');show('menu')}
 function play(){
   try{localStorage.setItem('ms-mode',mode);localStorage.setItem('ms-level',level);localStorage.setItem('ms-floor',floor);
     localStorage.setItem('ms-mix',mix?'1':'0');localStorage.setItem('ms-sel',JSON.stringify([...sel]))}catch(e){}
@@ -655,7 +668,7 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show'
 
 function init(){
   const LV=LEVELS[level];C=LV.c;R=LV.r;M=bombsFor(level,cur);plan=makePlan();NET=plan.reduce((a,b)=>a+b,0);
-  genId++;generating=false;hideLoading();resetZoom();
+  genId++;generating=false;hideLoading();resetZoom();$('#reviewbar').hidden=true;endSnap=null;fatal=null;
   clearInterval(timer);secs=0;started=false;over=false;fsum=0;opened=0;pendingWin=false;
   turn=0;scores=[0,0];radar=[RADAR[level],RADAR[level]];radarOn=false;
   $('#time').textContent='000';setCounter();faceEl.textContent='🙂';
@@ -1061,7 +1074,7 @@ function kick(power){
   g.style.setProperty('--kx',(Math.cos(a)*10*power).toFixed(1));g.style.setProperty('--ky',(Math.sin(a)*10*power).toFixed(1));
   g.classList.remove('kick');void g.offsetWidth;g.classList.add('kick');
 }
-let lastBoomT=0;
+let lastBoomT=0,endSnap=null,fatal=null;
 function blast(elm,power,neg){
   const r=elm.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
   const cols=neg?['#4fa8ff','#8ec5ff','#ffffff','#4fd8e8']:['#ff4d5e','#ff9a4f','#ffd166','#ffffff'];
@@ -1073,6 +1086,7 @@ function blast(elm,power,neg){
   loop();
 }
 function lose(x,y){
+  endSnap=grid.map(r=>r.map(g=>g.f));fatal=[x,y];
   over=true;clearInterval(timer);faceEl.textContent='😵';setRadarOn(false);
   const loser=turn,mines=[],g0=$('#game');
   for(let j=0;j<R;j++)for(let i=0;i<C;i++){const g=grid[j][i];
@@ -1109,6 +1123,7 @@ function lose(x,y){
   },end+900);
 }
 function win(){
+  endSnap=grid.map(r=>r.map(g=>g.f));fatal=null;
   over=true;clearInterval(timer);faceEl.textContent='😎';setRadarOn(false);
   if(has('duel')){ // bônus de bandeiras: certa +2, errada −2
     grid.flat().forEach(g=>{if(g.f!==0)scores[g.fo||0]+=(g.f===g.m?2:-2)});updateDuel();
@@ -1130,6 +1145,24 @@ function win(){
   },1200);
 }
 function modal(e,t,p){$('#mEmoji').textContent=e;$('#mTitle').textContent=t;$('#mText').textContent=p;$('#overlay').classList.add('show')}
+
+/* ---------- revisão: mostra onde você acertou e errou ---------- */
+function startReview(){
+  $('#overlay').classList.remove('show');
+  let ok=0,wrong=0,miss=0;
+  grid.forEach((row,y)=>row.forEach((g,x)=>{
+    const e=el(x,y),f=endSnap?endSnap[y][x]:g.f;
+    if(f!==0&&f===g.m){ok++;e.classList.add('rv-ok')}
+    else if(f!==0){wrong++;e.classList.add('wrong','rv-bad')}
+    else if(g.m!==0){miss++;e.classList.add('rv-miss')}
+  }));
+  const won=!fatal;
+  if(fatal){const fe=el(fatal[0],fatal[1]);fe.classList.add('rv-fatal');fe.scrollIntoView({block:'center',inline:'center',behavior:'smooth'})}
+  $('#rvText').innerHTML=(won?'<b>Você venceu!</b> ':'<b>Revisão:</b> a mina que explodiu pisca em vermelho. ')+
+    `<b>${ok}</b> bandeiras certas (✓), <b>${wrong}</b> erradas (✖) e <b>${miss}</b> minas sem bandeira (!).`;
+  $('#reviewbar').hidden=false;
+}
+$('#review').onclick=startReview;$('#rvAgain').onclick=()=>{$('#reviewbar').hidden=true;restart()};$('#rvMenu').onclick=()=>{$('#reviewbar').hidden=true;showMenu()};
 
 /* ---------- duelo ---------- */
 function updateDuel(){
