@@ -193,18 +193,31 @@ const MODES={
     help:'Clique direito: 🚩 mina (+) → 🚩 azul mina negativa (−) → remover. Os números são a soma (+1 e −1 se cancelam). O contador mostra a soma restante.'},
   multi:{name:'Multi-bombas',icon:'💥',mult:1.3,
     desc:'Um quadrado pode ter até 3 bombas. Coloque várias bandeiras no mesmo quadrado.',
-    help:'Clique direito repetido: 1 → 2 → 3 bandeiras no mesmo quadrado → remover. Cada bomba conta no número.'}
+    help:'Clique direito repetido: 1 → 2 → 3 bandeiras no mesmo quadrado → remover. Cada bomba conta no número.'},
+  chaos:{name:'Caos',icon:'🌀',mult:1.3,
+    desc:'Negativo + Multi-bombas juntos: minas negativas e até 3 bombas por quadrado. Boa sorte!',
+    help:'Clique direito repetido: 🚩 1→2→3 (positivas), depois 🚩 azuis −1→−2→−3 (negativas) → remover. Números = soma de todas as bombas vizinhas. O contador mostra a soma restante.'}
 };
 const $=s=>document.querySelector(s);
 const boardEl=$('#board'),faceEl=$('#face');
 let mode='classic',level='easy';
 try{mode=localStorage.getItem('ms-mode')||mode;level=localStorage.getItem('ms-level')||level}catch(e){}
 if(!MODES[mode])mode='classic';if(!LEVELS[level])level='easy';
-let C,R,M,NET,grid,cells,started,over,fsum,opened,timer,secs,flagMode=false,touching=false;
+let C,R,M,NET,plan,grid,cells,started,over,fsum,opened,timer,secs,flagMode=false,touching=false;
 
 const bombsFor=(m,l)=>Math.round(LEVELS[l].m*MODES[m].mult);
-const negFor=(m,b)=>m==='negative'?Math.round(b*.3):0;
-const netFor=(m,l)=>{const b=bombsFor(m,l);return b-2*negFor(m,b)};
+const hasNeg=()=>mode==='negative'||mode==='chaos';
+const hasMulti=()=>mode==='multi'||mode==='chaos';
+function makePlan(){ // valores das minas (com sinal), sorteados antes da 1ª jogada
+  const e=[];
+  for(let i=0;i<M;i++){
+    if(hasMulti()&&e.length&&Math.random()<.35){const k=e[Math.random()*e.length|0];if(k<3){e[e.indexOf(k)]=k+1;continue}}
+    e.push(1);
+  }
+  if(hasNeg()){const n=Math.round(e.length*.3);
+    e.map((v,i)=>i).sort(()=>Math.random()-.5).slice(0,n).forEach(i=>e[i]=-e[i])}
+  return e;
+}
 const fmt=n=>(n<0?'-':'')+String(Math.abs(n)).padStart(n<0?2:3,'0');
 
 /* ---------- menu ---------- */
@@ -216,7 +229,7 @@ function buildMenu(){
 function refreshMenu(){
   document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('sel',b.dataset.k===mode));
   $('#levels').innerHTML=Object.entries(LEVELS).map(([k,l])=>
-    `<button class="lvl${k===level?' sel':''}" data-k="${k}">${l.name}<small>${l.c}×${l.r} · ${bombsFor(mode,k)} ${mode==='multi'?'bombas':'minas'}</small></button>`).join('');
+    `<button class="lvl${k===level?' sel':''}" data-k="${k}">${l.name}<small>${l.c}×${l.r} · ${bombsFor(mode,k)} ${hasMulti()?'bombas':'minas'}</small></button>`).join('');
 }
 $('#modes').addEventListener('click',e=>{const b=e.target.closest('.mode');if(!b)return;mode=b.dataset.k;refreshMenu()});
 $('#levels').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(!b)return;level=b.dataset.k;refreshMenu()});
@@ -234,7 +247,7 @@ function showBest(){let b=null;try{b=localStorage.getItem(bestKey())}catch(e){}$
 const setCounter=()=>{$('#mines').textContent=fmt(NET-fsum)};
 
 function init(){
-  ({c:C,r:R}=LEVELS[level]);M=bombsFor(mode,level);NET=netFor(mode,level);
+  ({c:C,r:R}=LEVELS[level]);M=bombsFor(mode,level);plan=makePlan();NET=plan.reduce((a,b)=>a+b,0);
   clearInterval(timer);secs=0;started=false;over=false;fsum=0;opened=0;
   $('#time').textContent='000';setCounter();faceEl.textContent='🙂';
   $('#tag').textContent=`${MODES[mode].icon} ${MODES[mode].name} · ${LEVELS[level].name}`;
@@ -268,19 +281,10 @@ function neighbors(x,y){const a=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;
 
 function place(sx,sy){
   const safe=new Set([sy*C+sx,...neighbors(sx,sy).map(([x,y])=>y*C+x)]);
-  const mineCells=[];let placed=0;
-  while(placed<M){
-    if(mode==='multi'&&mineCells.length&&Math.random()<.35){ // empilha bomba numa já existente
-      const g=mineCells[Math.random()*mineCells.length|0];
-      if(g.m<3){g.m++;placed++}
-      continue;
-    }
-    const x=Math.random()*C|0,y=Math.random()*R|0,g=grid[y][x];
-    if(g.m||safe.has(y*C+x))continue;
-    g.m=1;mineCells.push(g);placed++;
-  }
-  const neg=negFor(mode,M);
-  if(neg)mineCells.sort(()=>Math.random()-.5).slice(0,neg).forEach(g=>g.m=-1);
+  const free=[];
+  for(let i=0;i<C*R;i++)if(!safe.has(i))free.push(i);
+  free.sort(()=>Math.random()-.5);
+  plan.forEach((v,i)=>{const k=free[i];grid[k/C|0][k%C].m=v});
   for(let y=0;y<R;y++)for(let x=0;x<C;x++){
     const nb=neighbors(x,y);
     grid[y][x].n=nb.reduce((s,[a,b])=>s+grid[b][a].m,0);
@@ -290,15 +294,14 @@ function place(sx,sy){
 function startTimer(){timer=setInterval(()=>{secs++;$('#time').textContent=String(secs).padStart(3,'0')},1000)}
 
 function nextFlag(f){
-  if(mode==='classic')return f?0:1;
-  if(mode==='negative')return f===0?1:f===1?-1:0;
-  return f>=3?0:f+1;
+  const seq={classic:[0,1],negative:[0,1,-1],multi:[0,1,2,3],chaos:[0,1,2,3,-1,-2,-3]}[mode];
+  return seq[(seq.indexOf(f)+1)%seq.length];
 }
 function renderFlag(x,y){
   const g=grid[y][x],e=el(x,y);
   e.classList.toggle('flagged',g.f>0);e.classList.toggle('negflag',g.f<0);
   e.innerHTML=g.f===0?'':`<span class="flag${g.f<0?' neg':''}">🚩</span>`+
-    (g.f<0?'<i class="badge neg">−</i>':g.f>1?`<i class="badge">×${g.f}</i>`:'');
+    (g.f<0?`<i class="badge neg">−${g.f<-1?-g.f:''}</i>`:g.f>1?`<i class="badge">×${g.f}</i>`:'');
 }
 function toggleFlag(x,y){
   if(over)return;const g=grid[y][x];if(g.o)return;
@@ -337,7 +340,7 @@ function openCell(x,y,d){
     if(t.length>=3)e.classList.add('long');
   }
 }
-function mineHTML(m){return '<span>💣</span>'+(m<0?'<i class="badge neg">−</i>':m>1?`<i class="badge">×${m}</i>`:'')}
+function mineHTML(m){return '<span>💣</span>'+(m<0?`<i class="badge neg">−${m<-1?-m:''}</i>`:m>1?`<i class="badge">×${m}</i>`:'')}
 function lose(x,y){
   over=true;clearInterval(timer);faceEl.textContent='😵';
   const mines=[];
