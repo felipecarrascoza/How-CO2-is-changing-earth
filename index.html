@@ -184,6 +184,15 @@
   .cell.flagged{background:#7a2a4f;box-shadow:inset 3px 3px 0 #b8487e,inset -3px -3px 0 #451430}
   .cell.negflag{background:#1f4e9c;box-shadow:inset 3px 3px 0 #3d7fe0,inset -3px -3px 0 #102a58}
   .cell.mine{background:#2a0f1d;box-shadow:inset 0 0 0 1px #5a1d36}
+  /* bomba armada: aparece, treme e pisca vermelho/preto antes de explodir */
+  .cell.fuse{z-index:8;animation:fuseShake .09s steps(2) infinite,fuseBlink .34s steps(1) infinite}
+  .cell.fuse2{animation:fuseShake .05s steps(2) infinite,fuseBlink .16s steps(1) infinite}
+  .cell.fuse .stack{animation:bombPop .28s cubic-bezier(.2,1.8,.4,1),bombThrob .16s steps(2) .28s infinite}
+  @keyframes bombThrob{50%{transform:scale(1.25)}}
+  .cell.fuse .stack img{filter:drop-shadow(1px 0 #fff) drop-shadow(-1px 0 #fff) drop-shadow(0 1px #fff) drop-shadow(0 -1px #fff)}
+  @keyframes fuseShake{0%{transform:translate(-2px,1px)}50%{transform:translate(2px,-1px)}100%{transform:translate(-1px,-1px)}}
+  @keyframes fuseBlink{0%{background:#ff1f3a;box-shadow:0 0 18px #ff1f3a}50%{background:#050505;box-shadow:0 0 18px #ff1f3a}}
+  @keyframes bombPop{from{transform:scale(0) rotate(-40deg)}}
   .cell.negmine{background:#0a2145;box-shadow:inset 0 0 0 1px #2d6fd0}
   .cell.negmine .stack>span{filter:invert(1) drop-shadow(0 0 4px #4fa8ff)}
   .cell.boom{background:var(--red)!important;z-index:2;animation:boom .45s both}
@@ -648,6 +657,8 @@ const SFX={
   start(){[392,523,659,784].forEach((f,i)=>tone(f,.14,'triangle',.11,i*.07))},
   open(d){tone(340+Math.min(d,16)*30,.09,'sine',.08)},
   charge(){tone(70,1.3,'sine',.09,0,420);tone(140,1.3,'triangle',.04,0,840)},
+  fuseStart(){tone(120,.9,'sawtooth',.06,0,520)},
+  tick(k){tone(k%2?520:880,.05,'square',.07)},
   chain(k){noise(.2,.22,2600,180);tone(110+(k*37)%90,.16,'sawtooth',.08,0,45)},
   slam(){noise(.7,.5,3500,60);tone(70,.5,'sawtooth',.25,0,30);tone(1400,.12,'square',.05,0,300)},
   chord(){tone(440,.06,'triangle',.1);tone(554,.08,'triangle',.1,.05)},
@@ -1249,9 +1260,38 @@ function blastAt(x,y,w,n,neg,ring){ // explosão em coordenadas já medidas (sem
     r.style.setProperty('--sz',Math.max(w,24)+'px');document.body.appendChild(r);setTimeout(()=>r.remove(),800)}
   loop();
 }
+/* derrota: zoom na mina → a bomba surge e treme alternando vermelho/preto → explode, tira o zoom e começa a reação em cadeia */
 function lose(x,y){
   endSnap=grid.map(r=>r.map(g=>g.f));fatal=[x,y];
-  over=true;clearInterval(timer);faceEl.textContent='😵';setRadarOn(false);
+  over=true;clearInterval(timer);faceEl.textContent='😰';setRadarOn(false);
+  const id=genId,c=el(x,y),g=$('#game'),m0=grid[y][x].m;
+  const gr=g.getBoundingClientRect(),cr=c.getBoundingClientRect();
+  const cx=cr.left+cr.width/2,cy=cr.top+cr.height/2;
+  g.style.transformOrigin=`${cx-gr.left}px ${cy-gr.top}px`;
+  g.style.transition='transform .8s cubic-bezier(.2,.7,.2,1)';
+  // dá zoom e leva a casa para o centro da tela
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.transform=`translate(${(innerWidth/2-cx).toFixed(1)}px,${(innerHeight/2-cy).toFixed(1)}px) scale(2.3)`}));
+  SFX.fuseStart();
+  // no meio do zoom a bomba surge na casa e começa a tremer, piscando vermelho/preto
+  setTimeout(()=>{
+    if(id!==genId)return;
+    c.classList.remove('flagged','negflag');c.classList.add('open','mine','fuse');
+    if(m0<0)c.classList.add('negmine');
+    c.innerHTML=mineHTML(m0);
+    let k=0;(function tick(){if(id!==genId||!c.classList.contains('fuse'))return;SFX.tick(k++);setTimeout(tick,k>6?85:170)})();
+  },380);
+  setTimeout(()=>{if(id===genId)c.classList.add('fuse2')},1000);
+  // explode: tira o zoom de uma vez e dispara a cadeia
+  setTimeout(()=>{
+    if(id!==genId)return;
+    c.classList.remove('fuse','fuse2');
+    g.style.transition='transform .2s cubic-bezier(.2,1.8,.4,1)';g.style.transform='none';
+    setTimeout(()=>{if(id===genId){g.style.transition='';g.style.transform=''}},450);
+    faceEl.textContent='😵';
+    chain(x,y,id);
+  },1650);
+}
+function chain(x,y,id){
   const loser=turn,mines=[],g0=$('#game');
   for(let j=0;j<R;j++)for(let i=0;i<C;i++){const g=grid[j][i];
     if(g.m!==0&&g.f!==g.m)mines.push([i,j]);
@@ -1266,25 +1306,28 @@ function lose(x,y){
   const per=Math.max(3,Math.min(24,Math.round(600/Math.max(1,mines.length))));
   g0.classList.add('quake');
   mines.forEach(([i,j],k)=>setTimeout(()=>{
+    if(id!==genId)return;
     const e=el(i,j),m=grid[j][i].m,first=(i===x&&j===y);
     e.classList.remove('flagged','negflag');e.classList.add('open','mine');
     if(m<0)e.classList.add('negmine');
-    e.innerHTML=mineHTML(m);
+    if(!first)e.innerHTML=mineHTML(m);
     if(k<30)neighbors(i,j).forEach(([a,b])=>{const n=el(a,b);if(!n.classList.contains('mine')&&!n.classList.contains('blast'))n.classList.add('blast')});
     if(first){e.classList.add('boom');boardEl.classList.add('shake2');SFX.boom()}
     const [px,py,pw]=pos0[k];
     blastAt(px,py,pw,first?60:per,m<0,first||k%8===0);
-    if(first||k%3===0)kick(first?1.6:.45);
+    if(!first&&k%3===0)kick(.45);
     const now=performance.now();if(!first&&now-lastBoomT>60){lastBoomT=now;SFX.chain(k)}
   },times[k]||0));
   const end=(times[times.length-1]||0)+250;
   setTimeout(()=>{ // clímax: clarão branco, tremor forte e a última explosão
+    if(id!==genId)return;
     const f=document.createElement('div');f.className='flashfull';document.body.appendChild(f);setTimeout(()=>f.remove(),700);
     kick(2.2);SFX.slam();boardEl.classList.remove('shake2');void boardEl.offsetWidth;boardEl.classList.add('shake2');
   },end);
-  setTimeout(()=>{g0.classList.remove('quake')},end+500);
+  setTimeout(()=>{if(id===genId)g0.classList.remove('quake')},end+500);
   revealLiars();
   setTimeout(()=>{
+    if(id!==genId)return;
     if(has('duel'))modal('💥',tr('duelBoom',PN[loser]),tr('duelBoomText',PN[1-loser],scores[0],scores[1]));
     else modal('💥',tr('boom'),tr('boomText'));
   },end+900);
