@@ -84,6 +84,8 @@
 
   /* ---------- jogo ---------- */
   .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .gtitle{font-family:var(--pix);font-size:13px;color:#fbf6ff;text-shadow:-2px 0 var(--pink),2px 0 var(--cyan);animation:glitch 5s infinite;letter-spacing:1px}
+  @media(max-width:620px){.gtitle{display:none}}
   .tag{font-weight:600;font-size:14px;padding:6px 12px;border-radius:3px;background:var(--panel2);border:2px solid var(--line);color:var(--cyan);letter-spacing:1px}
   .tool{border:2px solid var(--line);background:var(--panel);padding:7px 13px;border-radius:3px;
     font-weight:600;font-size:15px;cursor:pointer;transition:.15s}
@@ -92,10 +94,13 @@
   .tool.on{background:var(--pink);border-color:var(--pink);color:#2a0618}
   .hud{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
   .stat{min-width:104px;padding:9px 12px;border-radius:3px;background:#02060d;border:2px solid var(--line);
-    font-family:var(--pix);font-size:17px;line-height:1;color:var(--cyan);text-align:center;letter-spacing:1px;text-shadow:0 0 10px #4fd8e888}
+    font-family:var(--pix);font-size:17px;line-height:1;color:var(--cyan);text-align:center;letter-spacing:1px;text-shadow:-2px 0 var(--pink),2px 0 var(--cyan);color:#eafcff;animation:statglitch 6s infinite}
+  .hud .stat:last-child{animation-delay:-3s}
+  @keyframes statglitch{0%,92%,100%{transform:none}94%{transform:translateX(3px);text-shadow:-5px 0 var(--pink),5px 0 var(--cyan)}96%{transform:translateX(-3px);text-shadow:4px 0 var(--pink),-4px 0 var(--cyan)}98%{transform:translateX(1px)}}
   .stat span{font-family:var(--ui);font-size:16px;margin-right:6px}
   #face{width:54px;height:54px;border-radius:3px;font-size:28px;border:2px solid var(--line);background:var(--panel2);cursor:pointer;transition:.15s}
-  #face:hover{border-color:var(--cyan);transform:translateY(-2px)}
+  #face:hover{border-color:var(--cyan);animation:jitter .25s steps(2) infinite}
+  @keyframes jitter{50%{transform:translate(2px,-1px);filter:drop-shadow(-2px 0 #ff5c93) drop-shadow(2px 0 #4fd8e8)}}
   #face:active{transform:translateY(2px)}
   .boardwrap{overflow:auto;max-width:calc(100vw - 80px);max-height:62vh;padding:8px;border-radius:3px;background:#030812;border:2px solid var(--line)}
   #board{display:grid;gap:3px;width:max-content;margin:0 auto;position:relative}
@@ -115,7 +120,7 @@
   .n0{color:#7d8fc2}
   .n1{color:#5bc0ff}.n2{color:#53e69a}.n3{color:#ff6b7a}.n4{color:#c58bff}
   .n5{color:#ffb454}.n6{color:#4fe3e3}.n7{color:#ff7ac8}.n8{color:#e6f0f7}
-  .cell.open[class*=" n"]{text-shadow:0 0 8px currentColor}
+  .cell.open[class*=" n"]{text-shadow:-1px 0 #ff5c93aa,1px 0 #4fd8e8aa}
   .cell.open.neg{background:#0a2145;box-shadow:inset 0 0 0 2px #2d6fd0}
   .flag{animation:flagpop .35s cubic-bezier(.2,1.6,.4,1) backwards;display:inline-block}
   .flag.neg{filter:hue-rotate(180deg) saturate(1.3) drop-shadow(0 0 4px #4fa8ff)}
@@ -149,8 +154,10 @@
   #board.shapes .cell.boom{z-index:4}
   #board.shapes .badge{right:auto;bottom:auto;left:calc(50% + var(--cell)*.1);top:calc(50% + var(--cell)*.08)}
   #board.shapes .cell.wrong::after{right:auto;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px}
-  #board.shake{animation:shake .5s}
+  #board.shake{animation:shake .5s,rgbsplit .6s}
+  @keyframes rgbsplit{0%,100%{filter:none}20%{filter:drop-shadow(-6px 0 #ff5c93) drop-shadow(6px 0 #4fd8e8)}50%{filter:drop-shadow(5px 0 #ff5c93) drop-shadow(-5px 0 #4fd8e8) hue-rotate(40deg)}80%{filter:drop-shadow(-3px 0 #ff5c93) drop-shadow(3px 0 #4fd8e8)}}
   @keyframes shake{20%{transform:translate(-8px,3px)}40%{transform:translate(8px,-4px)}60%{transform:translate(-6px,2px)}80%{transform:translate(5px,-2px)}}
+  #board.win{animation:rgbsplit 1.2s 2}
   #board.win .cell{animation:wave .8s both}
   @keyframes wave{50%{transform:translateY(-10px) scale(1.12);filter:brightness(1.6)}}
   .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;font-size:14px;color:var(--muted)}
@@ -255,6 +262,7 @@
   #sound:hover{border-color:var(--cyan);transform:translateY(-2px)}
   .px{width:1.2em;height:1.2em;image-rendering:pixelated;vertical-align:-.25em;display:inline-block;pointer-events:none}
   .stack .px{vertical-align:middle}
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,transparent 0 2px,#0000001f 2px 3px)}
   canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:6}
   @media(max-width:520px){.stat{min-width:78px;font-size:13px}.screen{padding:14px}#menu h1{font-size:26px}.play{font-size:12px}}
 </style>
@@ -280,6 +288,7 @@
 <div class="screen" id="game">
   <div class="top">
     <button class="tool" id="menuBtn">← Menu</button>
+    <div class="gtitle">CAMPO MINADO</div>
     <div class="tag" id="tag"></div>
   </div>
   <div class="hud">
