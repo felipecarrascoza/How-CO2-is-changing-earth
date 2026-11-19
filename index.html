@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>Campo Minado</title>
+<title>Mine Sweeper</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
@@ -40,7 +40,9 @@
   @keyframes glitch{0%,92%,100%{text-shadow:-3px 0 var(--pink),3px 0 var(--cyan);transform:none}
     94%{text-shadow:-6px 0 var(--pink),6px 0 var(--cyan);transform:translateX(2px)}
     96%{text-shadow:5px 0 var(--pink),-5px 0 var(--cyan);transform:translateX(-2px)}}
-  #menu .tagline{font-family:var(--pix);font-size:11px;letter-spacing:4px;color:var(--cyan);margin:0 0 8px}
+  #menu .tagline{display:inline-block;font-family:var(--pix);font-size:15px;letter-spacing:6px;color:#2a0618;background:var(--pink);padding:7px 8px 7px 14px;margin:0 0 12px;
+    transform:rotate(-2deg);box-shadow:4px 4px 0 #a02a56,0 0 24px #ff5c9355;animation:upd 1.6s steps(2) infinite}
+  @keyframes upd{50%{filter:brightness(1.25);transform:rotate(-2deg) translateY(-2px)}}
   #menu .sub{color:var(--muted);margin:0 0 14px;font-size:14px;letter-spacing:1px}
   .label{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin:20px 0 10px;display:flex;align-items:center;gap:12px}
   .label::before,.label::after{content:"";flex:1;height:2px;background:var(--line)}
@@ -84,7 +86,7 @@
 
   /* ---------- jogo ---------- */
   .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-  .gtitle{font-family:var(--pix);font-size:13px;color:#fbf6ff;text-shadow:-2px 0 var(--pink),2px 0 var(--cyan);animation:glitch 5s infinite;letter-spacing:1px}
+  .gtitle{text-transform:uppercase;font-family:var(--pix);font-size:13px;color:#fbf6ff;text-shadow:-2px 0 var(--pink),2px 0 var(--cyan);animation:glitch 5s infinite;letter-spacing:1px}
   @media(max-width:620px){.gtitle{display:none}}
   .tag{font-weight:600;font-size:14px;padding:6px 12px;border-radius:3px;background:var(--panel2);border:2px solid var(--line);color:var(--cyan);letter-spacing:1px}
   .tool{border:2px solid var(--line);background:var(--panel);padding:7px 13px;border-radius:3px;
@@ -126,8 +128,8 @@
   .flaglayer{position:absolute;inset:3px;display:flex;align-items:center;justify-content:center;pointer-events:none}
   .flaglayer.cover{background:inherit}
   .flaglayer.top{z-index:2}
-  .flaglayer.up{animation:asmUp .42s steps(10) both}
-  .flaglayer.dn{animation:asmDn .42s steps(10) both}
+  .flaglayer.up{animation:asmUp .24s steps(8) both}
+  .flaglayer.dn{animation:asmDn .24s steps(8) both}
   @keyframes asmUp{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0 0 0 0)}}
   @keyframes asmDn{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
   .flag.neg{filter:hue-rotate(180deg) saturate(1.3) drop-shadow(0 0 4px #4fa8ff)}
@@ -217,12 +219,17 @@
   #toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,20px);opacity:0;z-index:9;background:var(--panel2);border:2px solid var(--cyan);color:var(--cyan);
     padding:10px 18px;border-radius:3px;font-size:15px;font-weight:600;transition:.3s;pointer-events:none}
   #toast.show{opacity:1;transform:translate(-50%,0)}
-  #tut{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:#02060dcc;
+  #tut,#settings{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:#02060dcc;
     opacity:0;pointer-events:none;transition:.25s;padding:16px}
-  #tut.show{opacity:1;pointer-events:auto}
+  #tut.show,#settings.show{opacity:1;pointer-events:auto}
   .tutbox{position:relative;width:500px;max-width:100%;max-height:92vh;overflow:auto;background:var(--panel);
     border:2px solid var(--cyan);border-radius:3px;padding:24px;box-shadow:0 0 40px #4fd8e833;transform:scale(.88);transition:.3s steps(6)}
-  #tut.show .tutbox{transform:none}
+  #tut.show .tutbox,#settings.show .tutbox{transform:none}
+  .srow{margin:18px 0}
+  .slabel{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .sopts{display:flex;gap:10px;flex-wrap:wrap}
+  #gear{position:fixed;top:12px;right:66px;z-index:7;width:44px;height:44px;border-radius:3px;font-size:19px;cursor:pointer;border:2px solid var(--line);background:var(--panel);transition:.15s}
+  #gear:hover{border-color:var(--cyan);transform:translateY(-2px) rotate(20deg)}
   .tutbox h2{margin:0 0 14px;text-align:center;font-family:var(--pix);font-weight:400;font-size:15px;line-height:1.5;color:#fff;text-shadow:-2px 0 var(--pink),2px 0 var(--cyan)}
   .tutbox .x{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:3px;border:2px solid var(--line);background:var(--panel2);cursor:pointer}
   .tutbox .x:hover{background:var(--pink);color:#2a0618;border-color:var(--pink)}
@@ -314,162 +321,235 @@
 </style>
 </head>
 <body>
-<button id="sound" title="Som">🔊</button>
+<button id="gear" data-i18n-title="tSettings">⚙️</button>
+<button id="sound" data-i18n-title="tSound">🔊</button>
 
 <!-- MENU INICIAL -->
 <div class="screen active" id="menu">
-  <h1>Campo Minado</h1>
-  <p class="sub">Escolha o modo, o piso e a dificuldade</p>
+  <h1 data-i18n="title">Mine Sweeper</h1>
+  <p class="tagline">UPDATED</p>
+  <p class="sub" data-i18n="sub">Choose the mode, floor and difficulty</p>
   <div id="mixHint"></div>
-  <div class="label">Modo</div>
+  <div class="label" data-i18n="lblMode">Mode</div>
   <div class="modes" id="modes"></div>
-  <div class="label">Piso</div>
+  <div class="label" data-i18n="lblFloor">Floor</div>
   <div class="levels" id="floors"></div>
-  <div class="label">Dificuldade</div>
+  <div class="label" data-i18n="lblDiff">Difficulty</div>
   <div class="levels" id="levels"></div>
-  <button class="play" id="play">▼ JOGAR ▼</button>
+  <button class="play" id="play" data-i18n="play">▼ PLAY ▼</button>
 </div>
 
 <!-- JOGO -->
 <div class="screen" id="game">
   <div class="top">
-    <button class="tool" id="menuBtn">← Menu</button>
-    <div class="gtitle">CAMPO MINADO</div>
+    <button class="tool" id="menuBtn" data-i18n="menu">← Menu</button>
+    <div class="gtitle" data-i18n="title">Mine Sweeper</div>
     <div class="tag" id="tag"></div>
   </div>
   <div class="hud">
-    <div class="stat" title="Minas restantes"><span>🚩</span><b id="mines">010</b></div>
-    <button id="face" title="Reiniciar">🙂</button>
+    <div class="stat" data-i18n-title="tMines"><span>🚩</span><b id="mines">010</b></div>
+    <button id="face" data-i18n-title="tReset">🙂</button>
     <div class="stat"><span>⏱</span><b id="time">000</b></div>
   </div>
   <div class="duelbar" id="duel" hidden>
-    <div class="pl" id="p0"><span>🔵 Jogador 1</span><b id="sc0">0</b></div>
-    <div class="pl" id="p1"><span>🟠 Jogador 2</span><b id="sc1">0</b></div>
+    <div class="pl" id="p0"><span>🔵 Player 1</span><b id="sc0">0</b></div>
+    <div class="pl" id="p1"><span>🟠 Player 2</span><b id="sc1">0</b></div>
   </div>
   <div class="boardwrap"><div id="board"></div></div>
   <div class="foot">
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="tool" id="flagMode">🚩 Modo bandeira</button>
+      <button class="tool" id="flagMode" data-i18n="flagMode">🚩 Flag mode</button>
       <button class="tool" id="radarBtn" hidden>📡 Radar</button>
     </div>
-    <div>Recorde: <span class="best" id="best">—</span></div>
+    <div><span data-i18n="best">Best:</span> <span class="best" id="best">—</span></div>
   </div>
   <div class="foot" id="help"></div>
 </div>
 
 <div id="overlay"><div class="modal"><div class="big" id="mEmoji"></div><h2 id="mTitle"></h2><p id="mText"></p>
-  <div class="row"><button id="again">Jogar de novo</button><button id="review" class="alt">🔍 Revisar</button><button id="toMenu" class="alt">Menu</button></div></div></div>
+  <div class="row"><button id="again" data-i18n="again">Play again</button><button id="review" class="alt" data-i18n="review">🔍 Review</button><button id="toMenu" class="alt" data-i18n="toMenu">Menu</button></div></div></div>
 <canvas id="fx"></canvas>
 <div id="toast"></div>
-<div id="reviewbar" hidden><div id="rvText"></div><div class="rvbtns"><button class="tool" id="rvAgain">Jogar de novo</button><button class="tool" id="rvMenu">Menu</button></div></div>
+<div id="reviewbar" hidden><div id="rvText"></div><div class="rvbtns"><button class="tool" id="rvAgain" data-i18n="again">Play again</button><button class="tool" id="rvMenu" data-i18n="toMenu">Menu</button></div></div>
 <div id="loading"><div class="lbox"><div class="spin"><i></i><i></i><i></i><span>💣</span></div>
   <h3>Analisando possibilidades…</h3><p id="lText"></p><div class="lbar"><div id="lFill"></div></div><small id="lStat"></small></div></div>
 <div id="tut"><div class="tutbox"><button class="x" id="tutX">✕</button><h2 id="tutT"></h2>
-  <div class="demo" id="tutDemo"></div><ul id="tutL"></ul><button class="play" id="tutOk">Entendi</button></div></div>
+  <div class="demo" id="tutDemo"></div><ul id="tutL"></ul><button class="play" id="tutOk" data-i18n="gotIt">Got it</button></div></div>
+<div id="settings"><div class="tutbox"><button class="x" id="setX">✕</button><h2 data-i18n="settings">Settings</h2>
+  <div class="srow"><div class="slabel" data-i18n="language">Language</div>
+    <div class="sopts" id="langOpts"><button class="lvl" data-l="en">English</button><button class="lvl" data-l="pt">Português</button></div></div>
+  <div class="srow"><div class="slabel" data-i18n="soundLbl">Sound</div><div class="sopts"><button class="lvl" id="setSound"></button></div></div>
+  <button class="play" id="setOk" data-i18n="close">Close</button></div></div>
 
 <script>
-const LEVELS={
-  easy:{c:9,r:9,m:10,name:'Fácil',emoji:'🌱'},
-  medium:{c:16,r:16,m:40,name:'Médio',emoji:'⚡'},
-  hard:{c:30,r:16,m:99,name:'Difícil',emoji:'🔥'},
-  insane:{c:36,r:22,m:180,name:'Super difícil',emoji:'💀'}
+/* ---------- idiomas (inglês é o padrão) ---------- */
+const X=(en,pt)=>({en,pt});
+let lang='en';
+try{const l=localStorage.getItem('ms-lang');if(l==='en'||l==='pt')lang=l}catch(e){}
+const RES=o=>{ // resolve {en,pt} para o idioma atual, recursivamente
+  if(o&&typeof o==='object'&&!Array.isArray(o)){
+    if('en' in o&&'pt' in o)return o[lang];
+    const r={};for(const k in o)r[k]=RES(o[k]);return r;
+  }
+  return Array.isArray(o)?o.map(RES):o;
+};
+const STR={
+  en:{
+    title:'Mine Sweeper',sub:'Choose the mode, floor and difficulty',lblMode:'Mode',lblFloor:'Floor',lblDiff:'Difficulty',
+    play:'▼ PLAY ▼',menu:'← Menu',flagMode:'🚩 Flag mode',best:'Best:',again:'Play again',review:'🔍 Review',gotIt:'Got it',
+    toMenu:'Menu',tReset:'Restart',tSound:'Sound',tHow:'How it works',tMines:'Mines left',tSettings:'Settings',
+    mines:'mines',bombs:'bombs',mixName:'Mix',mixDesc:'Combine several modes and play them all at once. Turn it on and pick which ones.',
+    mixHint:'Pick 1 or more modes to combine (none = Classic)',floorWord:'Floor',torusHelp:'Edges wrap around (donut)',
+    player:n=>`Player ${n}`,even:'EVN',odd:'ODD',
+    flagFirst:'Open a cell before placing flags',radarFirst:'Open a cell before using the radar',
+    boom:'Boom!',boomText:'You stepped on a mine. Try again!',
+    duelBoom:p=>`${p} exploded!`,duelBoomText:(w,a,b)=>`${w} wins! Score: 🔵 ${a} × ${b} 🟠`,
+    tie:'Tie!',duelWins:p=>`${p} wins!`,duelCleared:(a,b)=>`Board cleared! Final score (with flags): 🔵 ${a} × ${b} 🟠`,
+    won:'You won!',time:s=>`Time: ${s}s.`,newRecord:' 🏆 New record!',
+    rvWon:'You won!',rvLost:'Review:',rvLostText:'the mine that exploded is flashing red.',
+    rvStats:(ok,wr,mi)=>`<b>${ok}</b> correct flags (✓), <b>${wr}</b> wrong (✖) and <b>${mi}</b> mines without a flag (!).`,
+    settings:'Settings',language:'Language',soundLbl:'Sound',on:'On',off:'Off',close:'Close',
+    langEn:'English',langPt:'Português'
+  },
+  pt:{
+    title:'Campo Minado',sub:'Escolha o modo, o piso e a dificuldade',lblMode:'Modo',lblFloor:'Piso',lblDiff:'Dificuldade',
+    play:'▼ JOGAR ▼',menu:'← Menu',flagMode:'🚩 Modo bandeira',best:'Recorde:',again:'Jogar de novo',review:'🔍 Revisar',gotIt:'Entendi',
+    toMenu:'Menu',tReset:'Reiniciar',tSound:'Som',tHow:'Como funciona',tMines:'Minas restantes',tSettings:'Configurações',
+    mines:'minas',bombs:'bombas',mixName:'Mix',mixDesc:'Combine vários modos e jogue todos de uma vez. Ligue e marque quais quer.',
+    mixHint:'Marque 1 ou mais modos para combinar (nenhum = Clássico)',floorWord:'Piso',torusHelp:'As bordas se conectam (donut)',
+    player:n=>`Jogador ${n}`,even:'par',odd:'ímp',
+    flagFirst:'Abra uma casa antes de marcar bandeiras',radarFirst:'Abra uma casa antes de usar o radar',
+    boom:'Boom!',boomText:'Você pisou numa mina. Tente de novo!',
+    duelBoom:p=>`${p} explodiu!`,duelBoomText:(w,a,b)=>`${w} vence! Placar: 🔵 ${a} × ${b} 🟠`,
+    tie:'Empate!',duelWins:p=>`${p} vence!`,duelCleared:(a,b)=>`Campo limpo! Placar final (com bandeiras): 🔵 ${a} × ${b} 🟠`,
+    won:'Você venceu!',time:s=>`Tempo: ${s}s.`,newRecord:' 🏆 Novo recorde!',
+    rvWon:'Você venceu!',rvLost:'Revisão:',rvLostText:'a mina que explodiu pisca em vermelho.',
+    rvStats:(ok,wr,mi)=>`<b>${ok}</b> bandeiras certas (✓), <b>${wr}</b> erradas (✖) e <b>${mi}</b> minas sem bandeira (!).`,
+    settings:'Configurações',language:'Idioma',soundLbl:'Som',on:'Ligado',off:'Desligado',close:'Fechar',
+    langEn:'English',langPt:'Português'
+  }
+};
+const tr=(k,...a)=>{const v=STR[lang][k];return typeof v==='function'?v(...a):v};
+
+const LEVELS_SRC={
+  easy:{c:9,r:9,m:10,name:X('Easy','Fácil'),emoji:'🌱'},
+  medium:{c:16,r:16,m:40,name:X('Medium','Médio'),emoji:'⚡'},
+  hard:{c:30,r:16,m:99,name:X('Hard','Difícil'),emoji:'🔥'},
+  insane:{c:36,r:22,m:180,name:X('Super hard','Super difícil'),emoji:'💀'}
 };
 const RADAR={easy:3,medium:5,hard:8,insane:12};
 const LIARS={easy:1,medium:2,hard:3,insane:5};
-const PN=['🔵 Jogador 1','🟠 Jogador 2'];
 
 /* quadros dos mini-tutoriais: cada frame é uma grade 5×3 de "tokens"
    . fechada · _ aberta vazia · número · F/FF/FFF bandeiras · N/NN/NNN bandeiras negativas
    B/BB/BBB bombas · X negativa · ~texto dica · sufixos: * destaque, > dedo, ^ radar, :a/:b dono (duelo) */
-const fr=(cap,s,ms)=>({cap,cells:s.trim().split(/\s+/),ms});
+const sp=s=>s.trim().split(/\s+/);
+const fr=(cap,s,ms)=>({cap,cells:typeof s==='string'?sp(s):X(sp(s.en),sp(s.pt)),ms});
 
-const MODES={
-  classic:{name:'Clássico',icon:'💣',desc:'O campo minado de sempre.',
-    help:'Clique direito / segurar = bandeira · dois botões (ou clique) num número = abrir vizinhos',
-    rules:['Clique numa casa para abrir. O número mostra quantas minas existem nos vizinhos.','Clique direito (ou segure o dedo) marca uma bandeira 🚩.','Clique num número cercado pelas bandeiras certas para abrir os vizinhos de uma vez.','Abra todas as casas sem mina para vencer. A primeira jogada é sempre segura.'],
+const MODES_SRC={
+  classic:{name:X('Classic','Clássico'),icon:'💣',desc:X('The minesweeper you know.','O campo minado de sempre.'),
+    help:X('Right-click / long-press = flag · both buttons (or click) on a number = open neighbors','Clique direito / segurar = bandeira · dois botões (ou clique) num número = abrir vizinhos'),
+    rules:X(['Click a cell to open it. The number shows how many mines are in the neighboring cells.','Right-click (or press and hold) to place a flag 🚩.','Click a number surrounded by the right flags to open all its neighbors at once.','Open every cell without a mine to win. Your first move is always safe.'],
+      ['Clique numa casa para abrir. O número mostra quantas minas existem nos vizinhos.','Clique direito (ou segure o dedo) marca uma bandeira 🚩.','Clique num número cercado pelas bandeiras certas para abrir os vizinhos de uma vez.','Abra todas as casas sem mina para vencer. A primeira jogada é sempre segura.']),
     frames:[
-      fr('Clique numa casa para abri-la.','. . . . .  . . .> . .  . . . . .'),
-      fr('O número mostra quantas minas existem nos 8 vizinhos.','. . . . .  . . 2* . .  . . . . .'),
-      fr('Clique direito (ou segure) para marcar 🚩 onde achar que há mina.','. . F> . .  . . 2 . .  . . . F .'),
-      fr('Com as bandeiras certas, clique no número: os vizinhos abrem de uma vez!','. 1 F 1 .  . 1 2> 2 .  . _ 1 F .'),
-      fr('Abra todas as casas seguras para vencer! 🎉','. 1 F 1 .  . 1 2 2 .  . _ 1 F .')]},
-  negative:{name:'Negativo',icon:'➖',
-    desc:'Existem minas negativas! Elas subtraem dos números e pedem bandeira azul (−).',
-    help:'Clique direito: 🚩 mina (+) → 🚩 azul (−) → remover · números = soma das minas',
-    rules:['Cerca de 30% das minas são negativas (bandeira azul).','Os números são a soma: mina normal = +1, negativa = −1. Elas se cancelam.','Um 0 pode esconder minas, por isso ele não abre os vizinhos sozinho.','Clique direito: 🚩 mina → 🚩 azul (negativa) → remover. O contador mostra a soma restante.'],
+      fr(X('Click a cell to open it.','Clique numa casa para abri-la.'),'. . . . .  . . .> . .  . . . . .'),
+      fr(X('The number shows how many mines are in the 8 neighbors.','O número mostra quantas minas existem nos 8 vizinhos.'),'. . . . .  . . 2* . .  . . . . .'),
+      fr(X('Right-click (or hold) to flag 🚩 where you think there is a mine.','Clique direito (ou segure) para marcar 🚩 onde achar que há mina.'),'. . F> . .  . . 2 . .  . . . F .'),
+      fr(X('With the right flags placed, click the number: the neighbors open at once!','Com as bandeiras certas, clique no número: os vizinhos abrem de uma vez!'),'. 1 F 1 .  . 1 2> 2 .  . _ 1 F .'),
+      fr(X('Open all the safe cells to win! 🎉','Abra todas as casas seguras para vencer! 🎉'),'. 1 F 1 .  . 1 2 2 .  . _ 1 F .')]},
+  negative:{name:X('Negative','Negativo'),icon:'➖',
+    desc:X('There are negative mines! They subtract from the numbers and need a blue flag (−).','Existem minas negativas! Elas subtraem dos números e pedem bandeira azul (−).'),
+    help:X('Right-click: 🚩 mine (+) → 🚩 blue (−) → remove · numbers = sum of mines','Clique direito: 🚩 mina (+) → 🚩 azul (−) → remover · números = soma das minas'),
+    rules:X(['About 30% of the mines are negative (blue flag).','Numbers are the sum: a normal mine = +1, a negative one = −1. They cancel out.','A 0 can hide mines, so it does not open its neighbors by itself.','Right-click: 🚩 mine → 🚩 blue (negative) → remove. The counter shows the remaining sum.'],
+      ['Cerca de 30% das minas são negativas (bandeira azul).','Os números são a soma: mina normal = +1, negativa = −1. Elas se cancelam.','Um 0 pode esconder minas, por isso ele não abre os vizinhos sozinho.','Clique direito: 🚩 mina → 🚩 azul (negativa) → remover. O contador mostra a soma restante.']),
     frames:[
-      fr('Há minas normais 💣 e minas negativas (azuis).','. . . . .  . B . X .  . . . . .'),
-      fr('Os números somam tudo: +1 e −1 se cancelam e dão 0. Um 0 pode esconder minas!','. . . . .  . . 0* . .  . . . . .'),
-      fr('Clique direito: 🚩 positiva, de novo: 🚩 azul (negativa).','. . . . .  . F 0 N> .  . . . . .')]},
-  multi:{name:'Multi-bombas',icon:'💥',
-    desc:'Um quadrado pode ter até 3 bombas. Use várias bandeiras no mesmo quadrado.',
-    help:'Clique direito repetido: 1 → 2 → 3 bandeiras no mesmo quadrado → remover',
-    rules:['Cada casa pode guardar de 1 a 3 bombas (cerca de 30% mais bombas no total).','Cada bomba conta no número.','Clique direito repetido: 1 → 2 → 3 bandeiras → remover. Uma bandeira desenhada por bomba.'],
+      fr(X('There are normal mines 💣 and negative mines (blue).','Há minas normais 💣 e minas negativas (azuis).'),'. . . . .  . B . X .  . . . . .'),
+      fr(X('Numbers add everything up: +1 and −1 cancel out to 0. A 0 can hide mines!','Os números somam tudo: +1 e −1 se cancelam e dão 0. Um 0 pode esconder minas!'),'. . . . .  . . 0* . .  . . . . .'),
+      fr(X('Right-click: positive 🚩, again: blue 🚩 (negative).','Clique direito: 🚩 positiva, de novo: 🚩 azul (negativa).'),'. . . . .  . F 0 N> .  . . . . .')]},
+  multi:{name:X('Multi-bombs','Multi-bombas'),icon:'💥',
+    desc:X('A cell can hold up to 3 bombs. Use several flags on the same cell.','Um quadrado pode ter até 3 bombas. Use várias bandeiras no mesmo quadrado.'),
+    help:X('Repeated right-click: 1 → 2 → 3 flags on the same cell → remove','Clique direito repetido: 1 → 2 → 3 bandeiras no mesmo quadrado → remover'),
+    rules:X(['Each cell can hold 1 to 3 bombs (about 30% more bombs overall).','Every bomb counts toward the number.','Repeated right-click: 1 → 2 → 3 flags → remove. One flag is drawn per bomb.'],
+      ['Cada casa pode guardar de 1 a 3 bombas (cerca de 30% mais bombas no total).','Cada bomba conta no número.','Clique direito repetido: 1 → 2 → 3 bandeiras → remover. Uma bandeira desenhada por bomba.']),
     frames:[
-      fr('Uma casa pode guardar até 3 bombas!','. . . . .  . BBB . B .  . . . . .'),
-      fr('Cada bomba conta no número: 3 + 1 = 4.','. . . . .  . . 4* . .  . . . . .'),
-      fr('Clique direito: 1 bandeira…','. . . . .  . F> . . .  . . . . .'),
-      fr('…2 bandeiras…','. . . . .  . FF> . . .  . . . . .'),
-      fr('…3 bandeiras no mesmo quadrado!','. . . . .  . FFF> . . .  . . . . .')]},
-  liar:{name:'Mentirosos',icon:'🤥',
-    desc:'Algumas casas mostram um número errado em ±1. Desconfie!',
-    help:'Algumas casas mentem em ±1 (reveladas com 🤥 no fim)',
-    rules:['Em 1 (Fácil), 2 (Médio), 3 (Difícil) ou 5 (Super difícil) casas, o número mostrado está errado em ±1.','Você não sabe quais são: se as contas não fecharem, desconfie!','No fim da partida, os mentirosos abertos ganham 🤥.','Cuidado: clicar num número para abrir vizinhos usa o valor mostrado, que pode ser mentira.'],
+      fr(X('A cell can hold up to 3 bombs!','Uma casa pode guardar até 3 bombas!'),'. . . . .  . BBB . B .  . . . . .'),
+      fr(X('Every bomb counts: 3 + 1 = 4.','Cada bomba conta no número: 3 + 1 = 4.'),'. . . . .  . . 4* . .  . . . . .'),
+      fr(X('Right-click: 1 flag…','Clique direito: 1 bandeira…'),'. . . . .  . F> . . .  . . . . .'),
+      fr(X('…2 flags…','…2 bandeiras…'),'. . . . .  . FF> . . .  . . . . .'),
+      fr(X('…3 flags on the same cell!','…3 bandeiras no mesmo quadrado!'),'. . . . .  . FFF> . . .  . . . . .')]},
+  liar:{name:X('Liars','Mentirosos'),icon:'🤥',
+    desc:X('Some cells show a number that is off by ±1. Be suspicious!','Algumas casas mostram um número errado em ±1. Desconfie!'),
+    help:X('Some cells lie by ±1 (revealed with 🤥 at the end)','Algumas casas mentem em ±1 (reveladas com 🤥 no fim)'),
+    rules:X(['In 1 (Easy), 2 (Medium), 3 (Hard) or 5 (Super hard) cells, the number shown is off by ±1.',"You don't know which ones: if the math doesn't add up, be suspicious!",'At the end of the game, the liars you opened get a 🤥.','Careful: clicking a number to open neighbors uses the number shown, which may be a lie.'],
+      ['Em 1 (Fácil), 2 (Médio), 3 (Difícil) ou 5 (Super difícil) casas, o número mostrado está errado em ±1.','Você não sabe quais são: se as contas não fecharem, desconfie!','No fim da partida, os mentirosos abertos ganham 🤥.','Cuidado: clicar num número para abrir vizinhos usa o valor mostrado, que pode ser mentira.']),
     frames:[
-      fr('Normalmente o número diz a verdade: 1 mina por perto.','. . . . .  . . 1* . .  . . . . .'),
-      fr('Mas em algumas casas o número MENTE em ±1!','. . . . .  . . 2* . .  . . . . .'),
-      fr('Aqui mostra 2, mas só existe 1 mina. Compare com as vizinhas para descobrir! 🤥','. . . . .  . B 2* . .  . . . . .')]},
-  partial:{name:'Dicas parciais',icon:'🧩',
-    desc:'Os números viram dicas: par/ímpar, "pelo menos" ou "no máximo".',
-    help:'Dicas: par/ímp · ≥N = pelo menos · ≤N = no máximo (clicar no número não abre vizinhos)',
-    rules:['Os números viram dicas parciais: par/ímp (paridade), ≥N (pelo menos N) ou ≤N (no máximo N).','Todas as dicas são verdadeiras: cruze várias para deduzir.','Clicar num número não abre os vizinhos neste modo.'],
+      fr(X('Normally the number tells the truth: 1 mine nearby.','Normalmente o número diz a verdade: 1 mina por perto.'),'. . . . .  . . 1* . .  . . . . .'),
+      fr(X('But in some cells the number LIES by ±1!','Mas em algumas casas o número MENTE em ±1!'),'. . . . .  . . 2* . .  . . . . .'),
+      fr(X('It shows 2, but there is only 1 mine. Compare with the neighbors to find out! 🤥','Aqui mostra 2, mas só existe 1 mina. Compare com as vizinhas para descobrir! 🤥'),'. . . . .  . B 2* . .  . . . . .')]},
+  partial:{name:X('Partial hints','Dicas parciais'),icon:'🧩',
+    desc:X('Numbers become hints: even/odd, "at least" or "at most".','Os números viram dicas: par/ímpar, "pelo menos" ou "no máximo".'),
+    help:X('Hints: even/odd · ≥N = at least · ≤N = at most (clicking a number does not open neighbors)','Dicas: par/ímp · ≥N = pelo menos · ≤N = no máximo (clicar no número não abre vizinhos)'),
+    rules:X(['Numbers become partial hints: even/odd (parity), ≥N (at least N) or ≤N (at most N).','All hints are true: combine several to deduce.','Clicking a number does not open its neighbors in this mode.'],
+      ['Os números viram dicas parciais: par/ímp (paridade), ≥N (pelo menos N) ou ≤N (no máximo N).','Todas as dicas são verdadeiras: cruze várias para deduzir.','Clicar num número não abre os vizinhos neste modo.']),
     frames:[
-      fr('Os números viram dicas. "par" / "ímp" = a soma das minas vizinhas é par ou ímpar.','. . . . .  . . ~par* . .  . . . . .'),
-      fr('"≥2" = pelo menos 2 minas. "≤1" = no máximo 1 mina.','. . . . .  . ~≥2* ~ímp ~≤1* .  . . . . .'),
-      fr('Cruze várias dicas para deduzir onde estão as minas.','. . . . .  . ~≥2 ~ímp* ~≤1 .  . F . . .')]},
-  detector:{name:'Detector',icon:'📡',
-    desc:'Poucas cargas de radar que somam as bombas numa área 5×5.',
-    help:'Botão 📡 Radar: escaneia a área 5×5 ao redor da casa e mostra a soma de bombas',
-    rules:['Você tem poucas cargas de radar por partida (3 / 5 / 8 / 12).','Toque em 📡 Radar e depois em qualquer casa: ele escaneia a área 5×5 (duas camadas de vizinhos).','O resultado é a soma das bombas na área e fica marcado no tabuleiro.','É preciso abrir uma casa antes de usar o radar.'],
+      fr(X('Numbers become hints. "EVN" / "ODD" = the sum of neighboring mines is even or odd.','Os números viram dicas. "par" / "ímp" = a soma das minas vizinhas é par ou ímpar.'),
+        X('. . . . .  . . ~EVN* . .  . . . . .','. . . . .  . . ~par* . .  . . . . .')),
+      fr(X('"≥2" = at least 2 mines. "≤1" = at most 1 mine.','"≥2" = pelo menos 2 minas. "≤1" = no máximo 1 mina.'),
+        X('. . . . .  . ~≥2* ~ODD ~≤1* .  . . . . .','. . . . .  . ~≥2* ~ímp ~≤1* .  . . . . .')),
+      fr(X('Combine several hints to deduce where the mines are.','Cruze várias dicas para deduzir onde estão as minas.'),
+        X('. . . . .  . ~≥2 ~ODD* ~≤1 .  . F . . .','. . . . .  . ~≥2 ~ímp* ~≤1 .  . F . . .'))]},
+  detector:{name:X('Detector','Detector'),icon:'📡',
+    desc:X('A few radar charges that sum the bombs in a 5×5 area.','Poucas cargas de radar que somam as bombas numa área 5×5.'),
+    help:X('Button 📡 Radar: scans the 5×5 area around a cell and shows the sum of bombs','Botão 📡 Radar: escaneia a área 5×5 ao redor da casa e mostra a soma de bombas'),
+    rules:X(['You get a few radar charges per game (3 / 5 / 8 / 12).','Tap 📡 Radar, then any cell: it scans the 5×5 area (two layers of neighbors).','The result is the sum of bombs in the area and stays marked on the board.','You must open a cell before using the radar.'],
+      ['Você tem poucas cargas de radar por partida (3 / 5 / 8 / 12).','Toque em 📡 Radar e depois em qualquer casa: ele escaneia a área 5×5 (duas camadas de vizinhos).','O resultado é a soma das bombas na área e fica marcado no tabuleiro.','É preciso abrir uma casa antes de usar o radar.']),
     frames:[
-      fr('Ative 📡 Radar (poucas cargas por partida) e toque numa casa.','. . . . .  . . .> . .  . . . . .'),
-      fr('O radar escaneia a área 5×5 ao redor…','^ ^ ^ ^ ^  ^ ^ ^> ^ ^  ^ ^ ^ ^ ^'),
-      fr('…e mostra a SOMA das bombas dentro dela. Aqui: 4!','^ ^ ^ ^ ^  ^ ^ ~Σ4* ^ ^  ^ ^ ^ ^ ^')]},
-  duel:{name:'Duelo',icon:'⚔️',
-    desc:'Dois jogadores no mesmo aparelho se alternam. Quem abrir uma mina perde!',
-    help:'🔵 e 🟠 se alternam · 1 ponto por casa aberta · mina = derrota · bandeira certa +2, errada −2',
-    rules:['Dois jogadores no mesmo aparelho, se alternando: 🔵 e 🟠.','Cada casa aberta vale 1 ponto e fica com a cor de quem abriu. Bandeiras não gastam a vez.','Quem abrir uma mina perde na hora!','Se o campo for limpo, vence quem tiver mais pontos. No fim, bandeira certa +2 e errada −2.'],
+      fr(X('Turn on 📡 Radar (few charges per game) and tap a cell.','Ative 📡 Radar (poucas cargas por partida) e toque numa casa.'),'. . . . .  . . .> . .  . . . . .'),
+      fr(X('The radar scans the 5×5 area around it…','O radar escaneia a área 5×5 ao redor…'),'^ ^ ^ ^ ^  ^ ^ ^> ^ ^  ^ ^ ^ ^ ^'),
+      fr(X('…and shows the SUM of bombs inside. Here: 4!','…e mostra a SOMA das bombas dentro dela. Aqui: 4!'),'^ ^ ^ ^ ^  ^ ^ ~Σ4* ^ ^  ^ ^ ^ ^ ^')]},
+  duel:{name:X('Duel','Duelo'),icon:'⚔️',
+    desc:X('Two players on the same device take turns. Whoever opens a mine loses!','Dois jogadores no mesmo aparelho se alternam. Quem abrir uma mina perde!'),
+    help:X('🔵 and 🟠 take turns · 1 point per cell opened · mine = defeat · right flag +2, wrong −2','🔵 e 🟠 se alternam · 1 ponto por casa aberta · mina = derrota · bandeira certa +2, errada −2'),
+    rules:X(['Two players on the same device, taking turns: 🔵 and 🟠.','Each opened cell is worth 1 point and takes the color of whoever opened it. Flags do not use up your turn.','Whoever opens a mine loses on the spot!','If the board is cleared, the higher score wins. At the end, a right flag is +2 and a wrong one −2.'],
+      ['Dois jogadores no mesmo aparelho, se alternando: 🔵 e 🟠.','Cada casa aberta vale 1 ponto e fica com a cor de quem abriu. Bandeiras não gastam a vez.','Quem abrir uma mina perde na hora!','Se o campo for limpo, vence quem tiver mais pontos. No fim, bandeira certa +2 e errada −2.']),
     frames:[
-      fr('🔵 abre uma casa e marca ponto.','. . . . .  . . 1:a> . .  . . . . .'),
-      fr('Agora é a vez da 🟠.','. . . . .  . 1:b> 1:a . .  . . . . .'),
-      fr('Quem abrir uma MINA perde na hora!','. . . . .  . 1:b 1:a B> .  . . . . .'),
-      fr('Se ninguém explodir, vence quem tiver mais pontos. Bandeira certa +2, errada −2.','. . . . .  . 1:b 1:a F .  . . . . .')]}
+      fr(X('🔵 opens a cell and scores.','🔵 abre uma casa e marca ponto.'),'. . . . .  . . 1:a> . .  . . . . .'),
+      fr(X("Now it's 🟠's turn.",'Agora é a vez da 🟠.'),'. . . . .  . 1:b> 1:a . .  . . . . .'),
+      fr(X('Whoever opens a MINE loses on the spot!','Quem abrir uma MINA perde na hora!'),'. . . . .  . 1:b 1:a B> .  . . . . .'),
+      fr(X('If nobody explodes, the higher score wins. Right flag +2, wrong −2.','Se ninguém explodir, vence quem tiver mais pontos. Bandeira certa +2, errada −2.'),'. . . . .  . 1:b 1:a F .  . . . . .')]}
 };
-const MIXINFO={name:'Mix',icon:'🎛️',
-  rules:['Marque a caixa Mix para escolher vários modos e jogar todos de uma vez.','Qualquer combinação funciona, por exemplo Negativo + Multi-bombas + Detector.','Sem nenhum modo marcado, joga o Clássico.','O piso (quadrado, irregular, triangular ou toroidal) é um só por vez.'],
+const MIXINFO_SRC={name:X('Mix','Mix'),icon:'🎛️',
+  rules:X(['Turn on Mix to pick several modes and play them all at once.','Any combination works, for example Negative + Multi-bombs + Detector.','With no mode checked, you play Classic.','The floor (square, irregular, triangular or toroidal) is one at a time.'],
+    ['Marque a caixa Mix para escolher vários modos e jogar todos de uma vez.','Qualquer combinação funciona, por exemplo Negativo + Multi-bombas + Detector.','Sem nenhum modo marcado, joga o Clássico.','O piso (quadrado, irregular, triangular ou toroidal) é um só por vez.']),
   frames:[
-    fr('Mix: você marca vários modos e joga todos juntos.','. . . . .  . . . . .  . . . . .'),
-    fr('➖ Negativo + 💥 Multi-bombas: bombas negativas e empilhadas.','. . . . .  . XX . BBB .  . . . . .'),
-    fr('+ 🤥 Mentirosos: este 2 pode estar mentindo.','. . . . .  . XX 2* BBB .  . . . . .'),
-    fr('+ 📡 Detector: o radar soma bombas positivas e negativas (−2 + 3 = 1).','^ ^ ^ ^ ^  ^ XX ~Σ1* BBB ^  ^ ^ ^ ^ ^')]};
-const FLOORS={
-  square:{icon:'▦',name:'Quadrados',
-    rules:['O tabuleiro tradicional: casas quadradas em linhas e colunas.','Cada casa tem até 8 vizinhas, incluindo as diagonais.'],
-    cap:n=>`Cada casa tem 8 vizinhas: as que encostam, inclusive nas diagonais.`},
-  irr:{icon:'⬢',name:'Irregular',
-    rules:['Cada casa é um polígono diferente, sorteado a cada partida.','Vizinhas são as casas que dividem uma borda: cada uma pode ter de 3 a 8.','O número mostra as bombas só nessas vizinhas.'],
-    cap:n=>`Vizinhas são as casas que dividem uma borda. Esta tem ${n}.`},
-  tri:{icon:'🔺',name:'Triangular',
-    rules:['O piso é feito de triângulos.','Cada triângulo tem 12 vizinhos: todos os que encostam, até só num vértice.','Os números ficam maiores, então fique atento!'],
-    cap:n=>`Cada triângulo tem ${n} vizinhos: todos que encostam, até só num vértice.`},
-  torus:{icon:'🍩',name:'Toroidal',
-    rules:['As bordas se conectam: o lado esquerdo encosta no direito e o de cima no de baixo, como num donut.','Todas as casas têm 8 vizinhas: não existem cantos nem bordas seguros.','Os cantos opostos do tabuleiro são vizinhos!'],
-    cap:n=>`As bordas se conectam! O canto é vizinho do lado oposto (${n} vizinhas).`}
+    fr(X('Mix: you check several modes and play them all together.','Mix: você marca vários modos e joga todos juntos.'),'. . . . .  . . . . .  . . . . .'),
+    fr(X('➖ Negative + 💥 Multi-bombs: stacked negative bombs.','➖ Negativo + 💥 Multi-bombas: bombas negativas e empilhadas.'),'. . . . .  . XX . BBB .  . . . . .'),
+    fr(X('+ 🤥 Liars: this 2 may be lying.','+ 🤥 Mentirosos: este 2 pode estar mentindo.'),'. . . . .  . XX 2* BBB .  . . . . .'),
+    fr(X('+ 📡 Detector: the radar sums positive and negative bombs (−2 + 3 = 1).','+ 📡 Detector: o radar soma bombas positivas e negativas (−2 + 3 = 1).'),'^ ^ ^ ^ ^  ^ XX ~Σ1* BBB ^  ^ ^ ^ ^ ^')]};
+const FLOORS_SRC={
+  square:{icon:'▦',name:X('Squares','Quadrados'),
+    rules:X(['The traditional board: square cells in rows and columns.','Each cell has up to 8 neighbors, diagonals included.'],['O tabuleiro tradicional: casas quadradas em linhas e colunas.','Cada casa tem até 8 vizinhas, incluindo as diagonais.']),
+    cap:X(n=>'Each cell has 8 neighbors: those that touch it, diagonals included.',n=>'Cada casa tem 8 vizinhas: as que encostam, inclusive nas diagonais.')},
+  irr:{icon:'⬢',name:X('Irregular','Irregular'),
+    rules:X(['Each cell is a different polygon, drawn at random every game.','Neighbors are the cells that share an edge: each one can have from 3 to 8.','The number counts bombs only in those neighbors.'],['Cada casa é um polígono diferente, sorteado a cada partida.','Vizinhas são as casas que dividem uma borda: cada uma pode ter de 3 a 8.','O número mostra as bombas só nessas vizinhas.']),
+    cap:X(n=>`Neighbors are the cells that share an edge. This one has ${n}.`,n=>`Vizinhas são as casas que dividem uma borda. Esta tem ${n}.`)},
+  tri:{icon:'🔺',name:X('Triangular','Triangular'),
+    rules:X(['The floor is made of triangles.','Each triangle has 12 neighbors: all that touch it, even at just one corner.','Numbers get bigger, so stay alert!'],['O piso é feito de triângulos.','Cada triângulo tem 12 vizinhos: todos os que encostam, até só num vértice.','Os números ficam maiores, então fique atento!']),
+    cap:X(n=>`Each triangle has ${n} neighbors: everything that touches it, even at a single corner.`,n=>`Cada triângulo tem ${n} vizinhos: todos que encostam, até só num vértice.`)},
+  torus:{icon:'🍩',name:X('Toroidal','Toroidal'),
+    rules:X(['Edges connect: the left side touches the right and the top touches the bottom, like a donut.','Every cell has 8 neighbors: there are no safe corners or edges.','Opposite corners of the board are neighbors!'],['As bordas se conectam: o lado esquerdo encosta no direito e o de cima no de baixo, como num donut.','Todas as casas têm 8 vizinhas: não existem cantos nem bordas seguros.','Os cantos opostos do tabuleiro são vizinhos!']),
+    cap:X(n=>`The edges connect! A corner neighbors the opposite side (${n} neighbors).`,n=>`As bordas se conectam! O canto é vizinho do lado oposto (${n} vizinhas).`)}
 };
-const TUTS={};
-Object.entries(MODES).forEach(([k,m])=>TUTS[k]={title:`${m.icon} ${m.name}`,rules:m.rules,frames:m.frames});
-TUTS.mix={title:`${MIXINFO.icon} ${MIXINFO.name}`,rules:MIXINFO.rules,frames:MIXINFO.frames};
-Object.entries(FLOORS).forEach(([k,f])=>TUTS['floor-'+k]={title:`${f.icon} Piso ${f.name}`,rules:f.rules,floor:k});
+let LEVELS,MODES,MIXINFO,FLOORS,PN,TUTS;
+function buildLang(){
+  LEVELS=RES(LEVELS_SRC);MODES=RES(MODES_SRC);MIXINFO=RES(MIXINFO_SRC);FLOORS=RES(FLOORS_SRC);
+  PN=['🔵 '+tr('player',1),'🟠 '+tr('player',2)];
+  TUTS={};
+  Object.entries(MODES).forEach(([k,m])=>TUTS[k]={title:`${m.icon} ${m.name}`,rules:m.rules,frames:m.frames});
+  TUTS.mix={title:`${MIXINFO.icon} ${MIXINFO.name}`,rules:MIXINFO.rules,frames:MIXINFO.frames};
+  Object.entries(FLOORS).forEach(([k,f])=>TUTS['floor-'+k]={title:`${f.icon} ${tr('floorWord')} ${f.name}`,rules:f.rules,floor:k});
+}
+buildLang();
 
 const $=s=>document.querySelector(s);
 const boardEl=$('#board'),faceEl=$('#face');
@@ -547,25 +627,26 @@ const SFX={
   turn(){tone(480,.07,'triangle',.08);tone(640,.09,'triangle',.08,.07)},
   win(){[523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,.28,'triangle',.13,i*.09));noise(.4,.05,6000,3000,.5)}
 };
-function syncSound(){$('#sound').textContent=muted?'🔇':'🔊'}
-$('#sound').onclick=()=>{muted=!muted;try{localStorage.setItem('ms-mute',muted?'1':'0')}catch(e){}syncSound();SFX.menu()};
+function syncSound(){$('#sound').textContent=muted?'🔇':'🔊';const b=$('#setSound');if(b)b.textContent=muted?tr('off'):tr('on')}
+const toggleSound=()=>{muted=!muted;try{localStorage.setItem('ms-mute',muted?'1':'0')}catch(e){}syncSound();SFX.menu()};
+$('#sound').onclick=toggleSound;
 syncSound();
 
 /* ---------- menu ---------- */
 function renderModes(){
   const ks=Object.keys(MODES).filter(k=>!mix||k!=='classic').concat('mix');
-  $('#modes').innerHTML=ks.map(k=>{const m=k==='mix'?{icon:MIXINFO.icon,name:'Mix',desc:'Combine vários modos e jogue todos de uma vez. Ligue e marque quais quer.'}:MODES[k];
-    return `<button class="mode${mix&&k!=='mix'?' mixing':''}${k==='mix'?' mixcard':''}" data-k="${k}"><span class="qm" data-tut="${k}" title="Como funciona">?</span><div class="ic">${m.icon}</div><b>${m.name}</b><span class="d">${m.desc}</span></button>`}).join('');
+  $('#modes').innerHTML=ks.map(k=>{const m=k==='mix'?{icon:MIXINFO.icon,name:tr('mixName'),desc:tr('mixDesc')}:MODES[k];
+    return `<button class="mode${mix&&k!=='mix'?' mixing':''}${k==='mix'?' mixcard':''}" data-k="${k}"><span class="qm" data-tut="${k}" title="${tr('tHow')}">?</span><div class="ic">${m.icon}</div><b>${m.name}</b><span class="d">${m.desc}</span></button>`}).join('');
   refreshMenu();
 }
 function refreshMenu(){
-  $('#mixHint').textContent=mix?(sel.size?'':'Marque 1 ou mais modos para combinar (nenhum = Clássico)'):'';
+  $('#mixHint').textContent=mix?(sel.size?'':tr('mixHint')):'';
   document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('sel',b.dataset.k==='mix'?mix:mix?sel.has(b.dataset.k):b.dataset.k===mode));
   $('#floors').innerHTML=Object.entries(FLOORS).map(([k,f])=>
-    `<button class="lvl${k===floor?' sel':''}" data-k="${k}">${f.icon} ${f.name}<span class="qm" data-tut="floor-${k}" title="Como funciona">?</span></button>`).join('');
+    `<button class="lvl${k===floor?' sel':''}" data-k="${k}">${f.icon} ${f.name}<span class="qm" data-tut="floor-${k}" title="${tr('tHow')}">?</span></button>`).join('');
   const multi=A().has('multi');
   $('#levels').innerHTML=Object.entries(LEVELS).map(([k,l])=>
-    `<button class="lvl${k===level?' sel':''}" data-k="${k}">${l.emoji} ${l.name}<small>${l.c}×${l.r} · ${bombsFor(k)} ${multi?'bombas':'minas'}</small></button>`).join('');
+    `<button class="lvl${k===level?' sel':''}" data-k="${k}">${l.emoji} ${l.name}<small>${l.c}×${l.r} · ${bombsFor(k)} ${multi?tr('bombs'):tr('mines')}</small></button>`).join('');
 }
 $('#modes').addEventListener('click',e=>{const b=e.target.closest('.mode');if(!b)return;
   const k=b.dataset.k;
@@ -653,8 +734,9 @@ function runFloorDemo(box,kind){
     f++;tutTimer=setTimeout(step,2300);
   })();
 }
-function openTut(id){
-  const t=TUTS[id];if(!t)return;clearTimeout(tutTimer);SFX.menu();
+let curTut=null;
+function openTut(id,silent){
+  const t=TUTS[id];if(!t)return;clearTimeout(tutTimer);if(!silent)SFX.menu();curTut=id;
   $('#tutT').textContent=t.title;
   $('#tutL').innerHTML=t.rules.map(r=>`<li>${r}</li>`).join('');
   const box=$('#tutDemo');box.innerHTML='';
@@ -665,7 +747,7 @@ function closeTut(){clearTimeout(tutTimer);$('#tut').classList.remove('show')}
 document.addEventListener('click',e=>{const q=e.target.closest('.qm');if(!q)return;e.stopPropagation();e.preventDefault();openTut(q.dataset.tut)},true);
 $('#tutOk').onclick=closeTut;$('#tutX').onclick=closeTut;
 $('#tut').addEventListener('click',e=>{if(e.target.id==='tut')closeTut()});
-addEventListener('keydown',e=>{if(e.key==='Escape')closeTut()});
+addEventListener('keydown',e=>{if(e.key==='Escape'){closeTut();closeSettings()}});
 
 /* ---------- jogo ---------- */
 const bestKey=()=>`ms-best-${[...cur].sort().join('+')}-${level}-${floor}`;
@@ -673,17 +755,20 @@ function showBest(){let b=null;if(!has('duel')){try{b=localStorage.getItem(bestK
 const setCounter=()=>{$('#mines').textContent=fmt(NET-fsum)};
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2200)}
 
+function gameLabels(){
+  const LV=LEVELS[level],names=[...cur].filter(k=>k!=='classic'||cur.size===1);
+  $('#tag').textContent=`${names.map(k=>MODES[k].icon).join('')} ${LV.emoji} ${LV.name} · ${FLOORS[floor].icon}`;
+  const helps=[...new Set(['classic',...cur])].map(k=>MODES[k].help);
+  if(floor==='torus')helps.push(tr('torusHelp'));
+  $('#help').textContent=helps.join(' · ');
+}
 function init(){
   const LV=LEVELS[level];C=LV.c;R=LV.r;M=bombsFor(level,cur);plan=makePlan();NET=plan.reduce((a,b)=>a+b,0);
   genId++;generating=false;hideLoading();resetZoom();$('#reviewbar').hidden=true;endSnap=null;fatal=null;
   clearInterval(timer);secs=0;started=false;over=false;fsum=0;opened=0;pendingWin=false;
   turn=0;scores=[0,0];radar=[RADAR[level],RADAR[level]];radarOn=false;
   $('#time').textContent='000';setCounter();faceEl.textContent='🙂';
-  const names=[...cur].filter(k=>k!=='classic'||cur.size===1);
-  $('#tag').textContent=`${names.map(k=>MODES[k].icon).join('')} ${LV.emoji} ${LV.name} · ${FLOORS[floor].icon}`;
-  const helps=[...new Set(['classic',...cur])].map(k=>MODES[k].help);
-  if(floor==='torus')helps.push('As bordas se conectam (donut)');
-  $('#help').textContent=helps.join(' · ');
+  gameLabels();
   $('#game').classList.toggle('duel',has('duel'));
   $('#duel').hidden=!has('duel');$('#radarBtn').hidden=!has('detector');
   updateDuel();updateRadar();
@@ -830,9 +915,9 @@ function prepareDisplay(){
     });
   }
   if(has('partial'))all.forEach(g=>{
-    if(g.a===0)return;const v=g.dn,t=Math.random(),r=Math.random()<.5?0:1;
-    if(t<.34||(t<.67&&v-r<1&&!has('negative')))g.h={k:'p',txt:(((v%2)+2)%2===0?'par':'ímp')};
-    else if(t<.67)g.h={k:'ge',txt:'≥'+(v-r)};
+    if(g.a===0)return;const v=g.dn,q=Math.random(),r=Math.random()<.5?0:1;
+    if(q<.34||(q<.67&&v-r<1&&!has('negative')))g.h={k:'p',txt:(((v%2)+2)%2===0?tr('even'):tr('odd'))};
+    else if(q<.67)g.h={k:'ge',txt:'≥'+(v-r)};
     else g.h={k:'le',txt:'≤'+(v+r)};
   });
 }
@@ -1006,14 +1091,14 @@ function hueRot180(r,g,b){
 function disintegrate(layer,neg){
   const imgs=[...layer.querySelectorAll('img.px')];if(!imgs.length)return;
   const rs=imgs.map(i=>i.getBoundingClientRect());
-  const top=Math.min(...rs.map(r=>r.top)),H=Math.max(1,Math.max(...rs.map(r=>r.bottom))-top),FR=26;
+  const top=Math.min(...rs.map(r=>r.top)),H=Math.max(1,Math.max(...rs.map(r=>r.bottom))-top),FR=14;
   imgs.forEach((img,k)=>{
     const pix=spritePix.get(img.alt);if(!pix)return;const r=rs[k],ps=r.width/PXN;
     for(const q of pix){
       const py=r.top+q.y*ps,rel=(py-top)/H;
       let [cr,cg,cb]=q.rgb;if(neg)[cr,cg,cb]=hueRot180(cr,cg,cb);
       parts.push({x:r.left+q.x*ps,y:py,vx:(Math.random()-.5)*3,vy:neg?-(.5+Math.random()*3):(-1+Math.random()*1.4),g:neg?-.03:.16,
-        life:1,d:.03+Math.random()*.03,sz:ps,c:`rgb(${cr},${cg},${cb})`,px:true,dl:Math.round((neg?1-rel:rel)*FR)+(Math.random()*4|0)});
+        life:1,d:.05+Math.random()*.04,sz:ps,c:`rgb(${cr},${cg},${cb})`,px:true,dl:Math.round((neg?1-rel:rel)*FR)+(Math.random()*3|0)});
     }
   });
   loop();
@@ -1025,7 +1110,7 @@ function stackHTML(ch,n,cls){ // n emojis desenhados, um por bandeira/bomba
 }
 function toggleFlag(x,y){
   if(over)return;
-  if(!started){toast('Abra uma casa antes de marcar bandeiras');return}
+  if(!started){toast(tr('flagFirst'));return}
   const g=grid[y][x];if(g.o)return;
   const nf=nextFlag(g.f),prev=g.f;fsum+=nf-g.f;g.f=nf;g.fo=turn;renderFlag(x,y,prev);setCounter();SFX.flag(nf);
 }
@@ -1159,8 +1244,8 @@ function lose(x,y){
   setTimeout(()=>{g0.classList.remove('quake')},end+500);
   revealLiars();
   setTimeout(()=>{
-    if(has('duel'))modal('💥',`${PN[loser]} explodiu!`,`${PN[1-loser]} vence! Placar: 🔵 ${scores[0]} × ${scores[1]} 🟠`);
-    else modal('💥','Boom!','Você pisou numa mina. Tente de novo!');
+    if(has('duel'))modal('💥',tr('duelBoom',PN[loser]),tr('duelBoomText',PN[1-loser],scores[0],scores[1]));
+    else modal('💥',tr('boom'),tr('boomText'));
   },end+900);
 }
 function win(){
@@ -1176,13 +1261,13 @@ function win(){
   boardEl.classList.add('win');
   let rec='';
   if(!has('duel')){try{const b=+localStorage.getItem(bestKey());
-    if(!b||secs<b){localStorage.setItem(bestKey(),secs);rec=' 🏆 Novo recorde!'}}catch(e){}}
+    if(!b||secs<b){localStorage.setItem(bestKey(),secs);rec=tr('newRecord')}}catch(e){}}
   showBest();confetti();SFX.win();
   setTimeout(()=>{
     if(has('duel')){
       const [a,b]=scores;
-      modal('🏆',a===b?'Empate!':`${PN[a>b?0:1]} vence!`,`Campo limpo! Placar final (com bandeiras): 🔵 ${a} × ${b} 🟠`);
-    }else modal('🎉','Você venceu!',`Tempo: ${secs}s.${rec}`);
+      modal('🏆',a===b?tr('tie'):tr('duelWins',PN[a>b?0:1]),tr('duelCleared',a,b));
+    }else modal('🎉',tr('won'),tr('time',secs)+rec);
   },1200);
 }
 function modal(e,t,p){$('#mEmoji').textContent=e;$('#mTitle').textContent=t;$('#mText').textContent=p;$('#overlay').classList.add('show')}
@@ -1199,8 +1284,7 @@ function startReview(){
   }));
   const won=!fatal;
   if(fatal){const fe=el(fatal[0],fatal[1]);fe.classList.add('rv-fatal');fe.scrollIntoView({block:'center',inline:'center',behavior:'smooth'})}
-  $('#rvText').innerHTML=(won?'<b>Você venceu!</b> ':'<b>Revisão:</b> a mina que explodiu pisca em vermelho. ')+
-    `<b>${ok}</b> bandeiras certas (✓), <b>${wrong}</b> erradas (✖) e <b>${miss}</b> minas sem bandeira (!).`;
+  $('#rvText').innerHTML=(won?`<b>${tr('rvWon')}</b> `:`<b>${tr('rvLost')}</b> ${tr('rvLostText')} `)+tr('rvStats',ok,wrong,miss);
   $('#reviewbar').hidden=false;
 }
 $('#review').onclick=startReview;$('#rvAgain').onclick=()=>{$('#reviewbar').hidden=true;restart()};$('#rvMenu').onclick=()=>{$('#reviewbar').hidden=true;showMenu()};
@@ -1222,12 +1306,12 @@ function setRadarOn(v){radarOn=v;boardEl.classList.toggle('radar',v);updateRadar
 $('#radarBtn').onclick=()=>{
   if(over)return;
   if(!radarOn&&radar[turn]<=0)return;
-  if(!radarOn&&!started){toast('Abra uma casa antes de usar o radar');return}
+  if(!radarOn&&!started){toast(tr('radarFirst'));return}
   SFX.click();setRadarOn(!radarOn);
 };
 function scan(x,y){
   if(over)return;
-  if(!started){setRadarOn(false);toast('Abra uma casa antes de usar o radar');return}
+  if(!started){setRadarOn(false);toast(tr('radarFirst'));return}
   if(radar[turn]<=0)return;
   radar[turn]--;
   const seen=new Map([[y*C+x,0]]),q=[[x,y]];
@@ -1266,7 +1350,27 @@ function restart(){SFX.click();$('#overlay').classList.remove('show');init()}
 faceEl.onclick=restart;$('#again').onclick=restart;
 $('#flagMode').onclick=e=>{flagMode=!flagMode;e.currentTarget.classList.toggle('on',flagMode)};
 addEventListener('keydown',e=>{if((e.key==='r'||e.key==='R')&&$('#game').classList.contains('active'))restart()});
-renderModes();
+/* ---------- configurações / idioma ---------- */
+function syncSettings(){
+  document.querySelectorAll('#langOpts button').forEach(b=>b.classList.toggle('sel',b.dataset.l===lang));syncSound();
+}
+function applyLang(){
+  document.documentElement.lang=lang==='pt'?'pt-BR':'en';document.title=tr('title');
+  buildLang();
+  document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=tr(e.dataset.i18n)});
+  document.querySelectorAll('[data-i18n-title]').forEach(e=>{e.title=tr(e.dataset.i18nTitle)});
+  $('#p0 span').textContent=PN[0];$('#p1 span').textContent=PN[1];
+  renderModes();gameLabels();syncSettings();
+  if($('#tut').classList.contains('show')&&curTut)openTut(curTut,true);
+}
+function setLang(l){if(l===lang)return;lang=l;try{localStorage.setItem('ms-lang',l)}catch(e){}SFX.menu();applyLang()}
+function closeSettings(){$('#settings').classList.remove('show')}
+$('#gear').onclick=()=>{SFX.menu();$('#settings').classList.add('show')};
+$('#setX').onclick=closeSettings;$('#setOk').onclick=closeSettings;
+$('#settings').addEventListener('click',e=>{if(e.target.id==='settings')closeSettings()});
+$('#langOpts').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setLang(b.dataset.l)});
+$('#setSound').onclick=toggleSound;
+applyLang();
 /* bolhas subindo no fundo (pixel) */
 for(let i=0;i<26;i++){const b=document.createElement('div'),z=2+Math.random()*4|0;
   b.className='bub';b.style.cssText=`left:${Math.random()*100}vw;width:${z}px;height:${z}px;animation-duration:${14+Math.random()*22}s;animation-delay:-${Math.random()*30}s`;
