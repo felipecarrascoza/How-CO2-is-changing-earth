@@ -589,15 +589,15 @@ const MODES_SRC={
       fr(X('Point at a cell to see its twin.','Aponte para uma casa para ver a gêmea.'),'. . . .> .  . . . . .  . .* . . .'),
       fr(X('Found one mine? You know where the other one is!','Achou uma mina? Você já sabe onde está a outra!'),'. . . F> .  . . . . .  . .* . . .')]},
   tide:{name:X('Tide','Maré'),icon:'🌊',
-    desc:X('Every few moves a wave re-covers a row: opened cells close again, leaving only a faint gray number. Remember what you saw!','A cada poucas jogadas uma onda cobre uma fileira de novo: as casas abertas fecham, deixando só um número cinza apagado. Lembre do que viu!'),
-    help:X('Tide: every few moves a wave re-covers a row (gray numbers stay as a memo)','Maré: a cada poucas jogadas uma onda cobre uma fileira de novo (os números cinza ficam de lembrete)'),
-    rules:X(['Every few moves (6 / 5 / 4 / 3 by difficulty) a wave sweeps across a row and covers the cells you had opened there.','Covered cells keep a faint gray number so you can remember, but they are closed again.','Re-open them (they are always safe) when you need them. You only win when every safe cell is open at the same time.','In Duel, re-opened cells give no extra points.'],
-      ['A cada poucas jogadas (6 / 5 / 4 / 3 conforme a dificuldade) uma onda passa por uma fileira e cobre as casas que você tinha aberto ali.','As casas cobertas guardam um número cinza apagado para você lembrar, mas voltam a ficar fechadas.','Reabra-as (elas são sempre seguras) quando precisar. Você só vence quando todas as casas seguras estiverem abertas ao mesmo tempo.','No Duelo, casas reabertas não dão pontos extras.']),
+    desc:X('Every few moves a wave re-covers a row: opened cells close again and the numbers vanish. Remember what you saw!','A cada poucas jogadas uma onda cobre uma fileira de novo: as casas abertas fecham e os números somem. Lembre do que viu!'),
+    help:X('Tide: every few moves a wave re-covers a row and its numbers vanish (re-open cells are always safe)','Maré: a cada poucas jogadas uma onda cobre uma fileira de novo e os números somem (casas reabertas são sempre seguras)'),
+    rules:X(['Every few moves (6 / 5 / 4 / 3 by difficulty) a wave sweeps across a row and covers the cells you had opened there.','Covered cells go back to blank closed tiles: the numbers are gone, so remember them!','Re-open them (they are always safe) when you need them. You only win when every safe cell is open at the same time.','In Duel, re-opened cells give no extra points.'],
+      ['A cada poucas jogadas (6 / 5 / 4 / 3 conforme a dificuldade) uma onda passa por uma fileira e cobre as casas que você tinha aberto ali.','As casas cobertas voltam a ser casas fechadas em branco: os números somem, então memorize!','Reabra-as (elas são sempre seguras) quando precisar. Você só vence quando todas as casas seguras estiverem abertas ao mesmo tempo.','No Duelo, casas reabertas não dão pontos extras.']),
     frames:[
       fr(X('You open cells and numbers appear.','Você abre casas e os números aparecem.'),'. . . . .  1 2 1 . .  . . . . .'),
       fr(X('Every few moves a wave sweeps across a row…','A cada poucas jogadas uma onda passa por uma fileira…'),'. . . . .  1^ 2^ 1^ _^ _^  . . . . .'),
-      fr(X('…and covers the cells you opened. Only a faint gray number remains.','…e cobre as casas que você abriu. Só fica um número cinza apagado.'),'. . . . .  g1 g2 g1 . .  . . . . .'),
-      fr(X('Remember them and re-open the cells (always safe) when you need them.','Lembre delas e reabra as casas (sempre seguras) quando precisar.'),'. . . . .  g1> g2 g1 . .  . . . . .')]},
+      fr(X('…and covers the cells you opened. The numbers are gone!','…e cobre as casas que você abriu. Os números somem!'),'. . . . .  . . . . .  . . . . .'),
+      fr(X('Remember them and re-open the cells (always safe) when you need them.','Lembre delas e reabra as casas (sempre seguras) quando precisar.'),'. . . . .  .> . . . .  . . . . .')]},
   duel:{name:X('Duel','Duelo'),icon:'⚔️',
     desc:X('Two players on the same device take turns. Whoever opens a mine loses!','Dois jogadores no mesmo aparelho se alternam. Quem abrir uma mina perde!'),
     help:X('🔵 and 🟠 take turns · 1 point per cell opened · mine = defeat · right flag +2, wrong −2','🔵 e 🟠 se alternam · 1 ponto por casa aberta · mina = derrota · bandeira certa +2, errada −2'),
@@ -1237,8 +1237,8 @@ function coverCell(i){ // a maré fecha a casa de novo, deixando só o número e
   const g=grid[i/C|0][i%C];if(!g.o)return;
   g.o=false;opened--;
   const e=cells[i];
-  e.className=e.className.replace(/\b(open|neg|hint|hp|hge|hle|op0|op1|n[0-8]|liar|rv-ok|rv-miss|rv-bad)\b/g,'').replace(/\s+/g,' ').trim()+' ghost tidehit';
-  e.style.animationDelay='';setTimeout(()=>e.classList.remove('tidehit'),520);
+  e.className=e.className.replace(/\b(open|neg|hint|hp|hge|hle|op0|op1|n[0-8]|liar|rv-ok|rv-miss|rv-bad)\b/g,'').replace(/\s+/g,' ').trim()+' tidehit';
+  e.textContent='';e.style.animationDelay='';setTimeout(()=>e.classList.remove('tidehit'),520);
 }
 let tideBusy=false;
 /* a maré: aviso piscando → onda enorme chega com espuma → cobre a fileira → volta e a linha reaparece "refeita", casa por casa */
